@@ -4,12 +4,17 @@ open Data.Nat.≤-Reasoning
 
 open import Data.Product
 open import Data.Empty
+open import Data.Unit hiding (_≤_; _≤?_; setoid)
+
+open import Relation.Nullary.Decidable
+
 
 open import Relation.Binary.PropositionalEquality as PropEq
 
 open import Function.Inverse
 
 open import Data.Fin using (Fin)
+open import Misc
 
 module GenPolygon where
   open import IncidenceGeometry public
@@ -37,10 +42,14 @@ module GenPolygon where
   lambda : (e f : O) → ℕ
   lambda e f = len (sc e f)
 
+  _is-shortest : ∀ {e f} → (c : chain e f) → Set
+  _is-shortest {e} {f} c = len c ≡ lambda e f
+
   postulate
+    sc-shortest : ∀ {e f} → (sc e f) is-shortest
     sc-is-shorter-than_ : ∀ {e f} (c : chain e f) → lambda e f ≤ len c
-    _is-shortest : ∀ {e f} → (c : chain e f) → len c ≡ lambda e f
-    
+  
+
   -- A₁ imples that the shortest length between any two elements can't be more than n
   A₁' : ∀ {e f} → (lambda e f) ≤ n
   A₁' {e} {f} with sc-is-shorter-than (proj₁ (A₁ e f)) | proj₂ (A₁ e f)
@@ -66,3 +75,16 @@ module GenPolygon where
     s t : ℕ
     GP-P# : (l : L) → Inverse (setoid (P# l)) (setoid (Fin (s + 1)))
     GP-L# : (p : P) → Inverse (setoid (L# p)) (setoid (Fin (t + 1)))
+
+  tail-shortest : ∀ {e f} {c : chain e f} → {≥1 : True (1 ≤? len c) } → c is-shortest → tail c {≥1} is-shortest
+  tail-shortest {.f} {f} {[ .f ]} {()} _
+  tail-shortest {e} {f} {.e ∷ c} cis = ≤-≥⇒≡ helper (sc-is-shorter-than c)
+    where
+      helper : (lambda (head c) f) ≥  len c
+      helper = pred-mono
+               (begin suc (len c)
+                          ≡⟨ cis ⟩
+                      len (sc e f)
+                          ≤⟨ sc-is-shorter-than (e ∷ sc (head c) f) ⟩
+                      (suc (len (sc (head c) f)) ∎))
+
