@@ -28,7 +28,7 @@ module IncidenceGeometry where
   infixr 5 _∷_   
   data chain : O → O → Set where
     [_] : (e : O) → chain e e
-    _∷_ : ∀ {f g} (e : O) {e<>f : False (e ≟ f)} {e#f : True (e #? f)} (c : chain f g) → chain e g    
+    _∷_ : ∀ {f g} (e : O) {{e<>f : False (e ≟ f)}} {{e#f : True (e #? f)}} (c : chain f g) → chain e g    
 
   len : ∀ {e f} (c : chain e f) → ℕ
   len [ _ ] = zero
