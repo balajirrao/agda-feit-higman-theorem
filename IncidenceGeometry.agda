@@ -37,11 +37,11 @@ module IncidenceGeometry where
   head : ∀ {e f} (c : chain e f) → O
   head {e} _ = e
 
-  second :  ∀ {e f} (c : chain e f) → {≥1 : True (1 ≤? len c)} → O
-  second {.f} {f} [ .f ] {()}
-  second (_ ∷ c) = head c
+  second :  ∀ {e f} (c : chain e f) → {{≥1 : True (1 ≤? len c)}} → O
+  second {.f} {f} [ .f ] {{()}}
+  second (_ ∷ c) {{_}} = head c
 
-  tail : ∀ {e f} (c : chain e f) → {≥1 : True (1 ≤? len c)} → chain (second c {≥1}) f
-  tail {.f} {f} [ .f ] {()}
-  tail {e} (.e ∷ c) = c
+  tail : ∀ {e f} (c : chain e f) → {{≥1 : True (1 ≤? len c)}} → chain (second c) f
+  tail {.f} {f} [ .f ] {{()}}
+  tail {e} (.e ∷ c) {{_}} = c
 
