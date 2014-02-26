@@ -30,7 +30,12 @@ module GenPolygon where
 
   n>2 : n > 2
   n>2 = s≤s (s≤s (s≤s z≤n))
-    
+  
+  -- Incidence Plane Axioms
+  postulate
+    IP-pt : {e f : P} → .(False ((pt e) ≟ (pt f))) → .(True ((pt e) #? (pt f))) → ⊥
+    IP-ln : {e f : L} → .(False ((ln e) ≟ (ln f))) → .(True ((ln e) #? (ln f))) → ⊥
+  
   -- A₁ : There exists a chain of length at most n from e to f
   -- A₂ : There exists at most one irreducible chain of length less than n from e to f
   postulate
