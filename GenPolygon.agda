@@ -34,14 +34,14 @@ module GenPolygon where
   -- A₁ : There exists a chain of length at most n from e to f
   -- A₂ : There exists at most one irreducible chain of length less than n from e to f
   postulate
-    A₁ : (e f : O) → ∃ (λ (c : chain e f) → len c ≤ n)
+    A₁ : (e f : X) → ∃ (λ (c : chain e f) → len c ≤ n)
     A₂ : ∀ {e f} (c c' : ∃ (λ (c : chain e f) → len c < n)) → (proj₁ c) ≡ (proj₁ c')
  
   -- From the A₁ postulate it follows that -- TODO : prove it ?
   postulate
-    sc : (e f : O) → chain e f
+    sc : (e f : X) → chain e f
 
-  lambda : (e f : O) → ℕ
+  lambda : (e f : X) → ℕ
   lambda e f = len (sc e f)
 
   -- A chain is shortest if it's length is lambda
