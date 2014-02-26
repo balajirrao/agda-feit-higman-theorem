@@ -46,7 +46,7 @@ module IncidenceGeometry where
   infixr 5 _∷_   
   data chain : X → X → Set where
     [_] : (e : X) → chain e e
-    _∷_ : ∀ {f g} (e : X) {{e<>f : False (e ≟ f)}} {{e#f : True (e #? f)}} (c : chain f g) → chain e g    
+    _∷_ : ∀ {f g} (e : X) .{{e<>f : False (e ≟ f)}} .{{e#f : True (e #? f)}} (c : chain f g) → chain e g    
 
   -- length of chains
   len : ∀ {e f} (c : chain e f) → ℕ
@@ -90,15 +90,15 @@ module IncidenceGeometry where
       e₂ : X
       chain-prev : chain e e₀     -- The chain upto the point e₀
       chain-next : chain e₂ f     -- The chain beyond the point e₂
-      {{e₀#e₁}} : True (e₀ #? e₁)
-      {{e₁#e₂}} : True (e₁ #? e₂)
-      {{e₀≢e₁}} : False (e₀ ≟ e₁)
-      {{e₁≢e₂}} : False (e₁ ≟ e₂)
+      .{{e₀#e₁}} : True (e₀ #? e₁)
+      .{{e₁#e₂}} : True (e₁ #? e₂)
+      .{{e₀≢e₁}} : False (e₀ ≟ e₁)
+      .{{e₁≢e₂}} : False (e₁ ≟ e₂)
       {{total-chain}} : c ≡ chain-prev ++ (e₀ ∷ e₁ ∷ chain-next) -- Proof that the pieces
                                                                  -- add up to the total chain
       
   -- A segment of a subchain is a segment of a superchain
-  segment-⊂ : ∀ {e f g} {{e<>f : False (e ≟ f)}} {{e#f : True (e #? f)}} → 
+  segment-⊂ : ∀ {e f g} .{{e<>f : False (e ≟ f)}} .{{e#f : True (e #? f)}} → 
                 {c : chain f g} → Segment c → Segment (e ∷ c)
   segment-⊂ {e} {f} {g} {c = c} s = record {
                                       e₀ = Segment.e₀ s;
