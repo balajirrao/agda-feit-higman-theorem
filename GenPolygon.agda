@@ -1,13 +1,15 @@
-open import Data.Nat
+open import Data.Nat hiding (_≟_)
 open import Data.Nat.Properties
 open Data.Nat.≤-Reasoning
 
 open import Data.Product
 open import Data.Empty
-open import Data.Unit hiding (_≤_; _≤?_; setoid)
+open import Data.Unit hiding (_≤_; _≤?_; setoid; _≟_)
 
+open import Relation.Nullary.Core
 open import Relation.Nullary.Decidable
 
+open import Data.Bool hiding (_≟_)
 
 open import Relation.Binary.PropositionalEquality as PropEq
 
@@ -42,11 +44,14 @@ module GenPolygon where
   lambda : (e f : O) → ℕ
   lambda e f = len (sc e f)
 
+  -- A chain is shortest if it's length is lambda
   _is-shortest : ∀ {e f} → (c : chain e f) → Set
   _is-shortest {e} {f} c = len c ≡ lambda e f
 
   postulate
     sc-shortest : ∀ {e f} → (sc e f) is-shortest
+
+    -- sc is shorter than any given chain
     sc-is-shorter-than_ : ∀ {e f} (c : chain e f) → lambda e f ≤ len c
   
 
@@ -71,13 +76,16 @@ module GenPolygon where
       .l#p : (ln l) # (pt #p)
   open P# public
 
+  -- Axioms for Generalized Polygon
   postulate
     s t : ℕ
     GP-P# : (l : L) → Inverse (setoid (P# l)) (setoid (Fin (s + 1)))
     GP-L# : (p : P) → Inverse (setoid (L# p)) (setoid (Fin (t + 1)))
 
-  tail-shortest : ∀ {e f} {c : chain e f} → {≥1 : True (1 ≤? len c) } → c is-shortest → tail c {≥1} is-shortest
-  tail-shortest {.f} {f} {[ .f ]} {()} _
+  -- Tail of a shortest chain is shortest
+  tail-shortest : ∀ {e f} {c : chain e f} → {{≥1 : True (1 ≤? len c) }} →
+                                          c is-shortest → tail c is-shortest
+  tail-shortest {.f} {f} {[ .f ]} {{()}} _
   tail-shortest {e} {f} {.e ∷ c} cis = ≤-≥⇒≡ helper (sc-is-shorter-than c)
     where
       helper : (lambda (head c) f) ≥  len c
@@ -88,3 +96,18 @@ module GenPolygon where
                           ≤⟨ sc-is-shorter-than (e ∷ sc (head c) f) ⟩
                       (suc (len (sc (head c) f)) ∎))
 
+ 
+  -- shortest chains are irreducible
+  -- TODO : Resolve implicit arguments
+  shortest-irred : ∀ {e f} (c : chain e f) → c is-shortest → {{≥2 : True (2 ≤? len c)}} → irred c
+  shortest-irred {.f} {f} [ .f ] cis {{()}} 
+  shortest-irred {e} {f} (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) cis {{()}}
+  shortest-irred {.e} {g} (e ∷ f ∷ c) cis {{_}} = λ {n} x → ≤⇒≯
+                                              (begin _ ≤⟨ s≤s (
+                                                sc-is-shorter-than
+                                                  proj₁ (short-circuit (n th-segment-of (e ∷ f ∷ c)) x)) ⟩
+                                                _
+                                                  ≤⟨ proj₂ (short-circuit (n th-segment-of (e ∷ f ∷ c)) x) ⟩
+                                                _
+                                                  ≡⟨ cis ⟩ (len (sc e g) ∎))
+                                                (n≤m+n zero _)
