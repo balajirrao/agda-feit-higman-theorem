@@ -98,16 +98,15 @@ module GenPolygon where
 
  
   -- shortest chains are irreducible
-  -- TODO : Resolve implicit arguments
   shortest-irred : ∀ {e f} (c : chain e f) → c is-shortest → {{≥2 : True (2 ≤? len c)}} → irred c
   shortest-irred {.f} {f} [ .f ] cis {{()}} 
   shortest-irred {e} {f} (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) cis {{()}}
   shortest-irred {.e} {g} (e ∷ f ∷ c) cis {{_}} = λ {n} x → ≤⇒≯
                                               (begin _ ≤⟨ s≤s (
                                                 sc-is-shorter-than
-                                                  proj₁ (short-circuit (n th-segment-of (e ∷ f ∷ c)) x)) ⟩
+                                                  proj₁ (short-circuit (_th-segment-of_ n (e ∷ f ∷ c) {{tt}} ) x)) ⟩
                                                 _
-                                                  ≤⟨ proj₂ (short-circuit (n th-segment-of (e ∷ f ∷ c)) x) ⟩
+                                                  ≤⟨ proj₂ (short-circuit (_th-segment-of_ n (e ∷ f ∷ c) {{tt}} ) x) ⟩
                                                 _
                                                   ≡⟨ cis ⟩ (len (sc e g) ∎))
                                                 (n≤m+n zero _)
