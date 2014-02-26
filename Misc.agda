@@ -16,5 +16,9 @@ module Misc where
   ≯⇒≤ {suc x} {zero} p = ⊥-elim (p (s≤s z≤n))
   ≯⇒≤ {suc x} {suc y} p = s≤s (≯⇒≤ (λ a → p (s≤s a)))
 
+  ≤⇒≯ : ∀ {x y} → x ≤ y → x ≯ y
+  ≤⇒≯ z≤n ()
+  ≤⇒≯ (s≤s p) q = ≤⇒≯ p (pred-mono q)
+
   ≡⇒≤ : ∀ {x y} → x ≡ y → x ≤ y
   ≡⇒≤ {x} refl = n∸m≤n zero x
