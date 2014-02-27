@@ -58,10 +58,16 @@ module Lemma2-4 where
   lem-id₁ {.f} {f} {[ .f ]} = refl
   lem-id₁ {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} rewrite (lem-id₁ {ppc = ppc}) = refl
 
+  -- Shortest ppchain
+  sppc : (e f : P) → ppchain e f
+  sppc e f = (sc (pt e) (pt f)) as-ppc  
+
+  -- ρ' is ρ for any ppchain
   ρ' : ∀ {e f} (ppc : ppchain e f) → ℕ
   ρ' {.f} {f} [ .f ] = zero
   ρ' {e} (_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}) = suc (ρ' ppc)
 
+  -- len ≡ 2 * ρ
   lem-ρ-len : ∀ {e f} {ppc : ppchain e f} → len (ppc as-c) ≡ 2 * ρ' ppc
   lem-ρ-len {.f} {f} {[ .f ]} = refl
   lem-ρ-len {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} rewrite lem-ρ-len {ppc = ppc} = solve 1
@@ -70,7 +76,12 @@ module Lemma2-4 where
                                                                                                 con 1 :+ x :+ (con 1 :+ (x :+ con 0)))
                                                                                              refl (ρ' ppc)
 
+  -- ρ between any two points
   ρ : (e f : P) → ℕ
-  ρ e f = ρ' (sc (pt e) (pt f) as-ppc)
+  ρ e f = ρ' (sppc e f)
 
-  
+  -- 2 * ρ ≡ lambda
+  lem-ρ-lambda : ∀ {e f} → lambda (pt e) (pt f) ≡ 2 * ρ e f
+  lem-ρ-lambda {e} {f} with lem-ρ-len {ppc = (sppc e f)}
+  ... | a rewrite lem-id₀ {c = sc (pt e) (pt f)} = a
+
