@@ -117,6 +117,10 @@ module Lemma2-4-core where
   tailpp {.f} {f} [ .f ] {{()}}
   tailpp (_∶⟨_⟩∶_ _ _ ppc) {{_}} = ppc
 
+  lem-tailpp-ρ : ∀ {e f} {ppc : ppchain e f} {{≥1 : True (1 ≤? ρ' ppc)}} → ρ' (tailpp ppc) ≡ pred (ρ' ppc)
+  lem-tailpp-ρ {.f} {f} {[ .f ]} {{()}}
+  lem-tailpp-ρ {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} {{≥1}} = refl
+
   module ρ-shortest  where
     private
       len≥2 : {e f : P} {{ppc : ppchain e f}} {{≥1 : True (1 ≤? ρ' ppc)}} → 2 ≤ (len (ppc as-c))
