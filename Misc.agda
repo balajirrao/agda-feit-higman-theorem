@@ -22,3 +22,6 @@ module Misc where
 
   ≡⇒≤ : ∀ {x y} → x ≡ y → x ≤ y
   ≡⇒≤ {x} refl = n∸m≤n zero x
+
+  m≤m : ∀ {m} → m ≤ m
+  m≤m = ≡⇒≤ refl

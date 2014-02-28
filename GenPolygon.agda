@@ -59,7 +59,6 @@ module GenPolygon where
     -- sc is shorter than any given chain
     sc-is-shorter-than_ : ∀ {e f} (c : chain e f) → lambda e f ≤ len c
   
-
   -- A₁ imples that the shortest length between any two elements can't be more than n
   A₁' : ∀ {e f} → (lambda e f) ≤ n
   A₁' {e} {f} with sc-is-shorter-than (proj₁ (A₁ e f)) | proj₂ (A₁ e f)
@@ -115,3 +114,7 @@ module GenPolygon where
                                                 _
                                                   ≡⟨ cis ⟩ (len (sc e g) ∎))
                                                 (n≤m+n zero _)
+
+  lem-tail-len : ∀ {e f} {c : chain e f} {{≥1 : True (1 ≤? len c)}} → len (tail c) ≡ pred (len c)
+  lem-tail-len {.f} {f} {[ .f ]} {{()}}
+  lem-tail-len {e} {f} {_∷_ .e {{e<>f}} {{e#f}} c} {{_}} = refl
