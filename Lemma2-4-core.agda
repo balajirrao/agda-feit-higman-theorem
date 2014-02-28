@@ -16,7 +16,7 @@ open SemiringSolver
 
 open import Misc
 
-module Lemma2-4 where
+module Lemma2-4-core where
 
   open import GenPolygon public
 
