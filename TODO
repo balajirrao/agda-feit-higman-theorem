@@ -1,0 +1,1 @@
+* Remove the len >= 1 requirement when calling tail
