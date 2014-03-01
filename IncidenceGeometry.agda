@@ -58,20 +58,19 @@ module IncidenceGeometry where
   head {e} _ = e
 
   -- second element form the left
-  neck :  ∀ {e f} (c : chain e f) → {{≥1 : True (1 ≤? len c)}} → X
-  neck {.f} {f} [ .f ] {{()}}
-  neck (_ ∷ c) {{_}} = head c
+  neck :  ∀ {e f} (c : chain e f) → X
+  neck {.f} {f} [ .f ] = f
+  neck (_ ∷ c) = head c 
 {-
   lem-neck : ∀ {e f} {c : chain e f} {{≥1 : True (1 ≤? len c)}} → True (head c #? neck c)
   lem-neck {.f} {f} {[ .f ]} {{()}} 
   lem-neck {e} {f} {_∷_ .e {{e<>f}} {{e#f}} c} {{_}} = {!e#f!}
   -}
 
-
   -- behead the chain
-  tail : ∀ {e f} (c : chain e f) → {{≥1 : True (1 ≤? len c)}} → chain (neck c) f
-  tail {.f} {f} [ .f ] {{()}}
-  tail {e} (.e ∷ c) {{_}} = c
+  tail : ∀ {e f} (c : chain e f) → chain (neck c) f
+  tail {.f} {f} [ .f ] = [ f ]
+  tail {e} (.e ∷ c) = c
   
   -- Join two chains
   -- The chains have to end and begin at a common point respectively.

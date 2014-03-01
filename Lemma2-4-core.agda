@@ -104,76 +104,47 @@ module Lemma2-4-core where
   -- A given chain is shortest in terms of ρ when ..
   _is-ρ-shortest : ∀ {e f} (ppc : ppchain e f) → Set
   _is-ρ-shortest {e} {f} ppc = ρ' ppc ≡ ρ e f
-  
+
   sppc-is-ρ-shortest : ∀ {e f} → (sppc e f) is-ρ-shortest
   sppc-is-ρ-shortest = refl
 
   -- neck of a ppchain is a point
-  neckp : ∀ {e f} (ppc : ppchain e f) → {{≥1 : True (1 ≤? ρ' ppc)}} → P
-  neckp {.f} {f} [ .f ] {{()}}
-  neckp {e} (_∶⟨_⟩∶_ {e₂} .e e₁ ppc {{e#e₁}} {{e₁#e₂}}) {{_}} = e₂
+  neckp : ∀ {e f} (ppc : ppchain e f) → P
+  neckp {.f} {f} [ .f ] = f
+  neckp {e} (_∶⟨_⟩∶_ {e₂} .e e₁ ppc {{e#e₁}} {{e₁#e₂}}) = e₂
   
-  tailpp : ∀ {e f} → (ppc : ppchain e f) → {{≥1 : True (1 ≤? ρ' ppc)}} → ppchain (neckp ppc) f
-  tailpp {.f} {f} [ .f ] {{()}}
-  tailpp (_∶⟨_⟩∶_ _ _ ppc) {{_}} = ppc
+  tailpp : ∀ {e f} → (ppc : ppchain e f) → ppchain (neckp ppc) f
+  tailpp {.f} {f} [ .f ] = [ f ]
+  tailpp (_∶⟨_⟩∶_ _ _ ppc) = ppc
 
-  lem-tailpp-ρ : ∀ {e f} {ppc : ppchain e f} {{≥1 : True (1 ≤? ρ' ppc)}} → ρ' (tailpp ppc) ≡ pred (ρ' ppc)
-  lem-tailpp-ρ {.f} {f} {[ .f ]} {{()}}
-  lem-tailpp-ρ {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} {{≥1}} = refl
+  lem-tailpp-ρ : ∀ {e f} {ppc : ppchain e f} → ρ' (tailpp ppc) ≡ pred (ρ' ppc)
+  lem-tailpp-ρ {.f} {f} {[ .f ]} = refl
+  lem-tailpp-ρ {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} = refl
 
   module ρ-shortest  where
-    private
-      len≥2 : {e f : P} {{ppc : ppchain e f}} {{≥1 : True (1 ≤? ρ' ppc)}} → 2 ≤ (len (ppc as-c))
-      len≥2 {{ppc = ppc}} {{≥1}} = begin
-             2
-               ≤⟨ m≤m {2} *-mono toWitness ≥1 ⟩
-             2 * ρ' ppc
-               ≡⟨ sym lem-2xρ-len ⟩
-             (len (ppc as-c) ∎)
-            where open Data.Nat.≤-Reasoning
-
-      len≥1 : {e f : P} {{ppc : ppchain e f}} {{≥1 : True (1 ≤? ρ' ppc)}} → True (1 ≤? (len (ppc as-c)))
-      len≥1 {{ppc = ppc}} {{≥1}} = fromWitness (begin
-                         1
-                           ≤⟨ s≤s z≤n ⟩
-                         2 
-                           ≤⟨ len≥2 ⟩
-                         (len (ppc as-c) ∎))
-            where open Data.Nat.≤-Reasoning
-
-
-      taillen≥1 : {e f : P} {{ppc : ppchain e f}} {{≥1 : True (1 ≤? ρ' ppc)}} → True (1 ≤? (len (tail (ppc as-c) {{len≥1}})))
-      taillen≥1 {{ppc = ppc}} {{≥1}} = fromWitness
-                                       (begin
-                                         1 ≤⟨ pred-mono len≥2 ⟩
-                                         pred (len (ppc as-c)) ≡⟨ sym (lem-tail-len {c = ppc as-c} {{len≥1}}) ⟩
-                                         (len (tail (ppc as-c) {{len≥1}} ) ∎))
-            where open Data.Nat.≤-Reasoning
-
-
-    lem-neckp : {e f : P} {ppc : ppchain e f} {{≥1 : True (1 ≤? ρ' ppc)}} → pt (neckp ppc) ≡ 
-                  neck (tail (ppc as-c) {{len≥1}}) {{taillen≥1}}
+    lem-neckp : {e f : P} {ppc : ppchain e f} → pt (neckp ppc) ≡ 
+                  neck (tail (ppc as-c))
                       
-    lem-neckp {.f} {f} {[ .f ]} = λ {{}}
+    lem-neckp {.f} {f} {[ .f ]} = refl
     lem-neckp {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} = refl
 
-    lem-tailpp : ∀ {e f} {ppc : ppchain e f} {{≥1 : True (1 ≤? ρ' ppc)}} →
-                         len ((tailpp ppc) as-c) ≡ len (tail (tail (ppc as-c) {{len≥1}}) {{taillen≥1}})
-    lem-tailpp {.f} {f} {[ .f ]} = λ {{}}
+    lem-tailpp : ∀ {e f} {ppc : ppchain e f} →
+                         len ((tailpp ppc) as-c) ≡ len (tail (tail (ppc as-c)))
+    lem-tailpp {.f} {f} {[ .f ]} = refl
     lem-tailpp {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} = refl
 
-    tailpp-ρ-shortest : ∀ {e f} {ppc : ppchain e f} {{≥1 : True (1 ≤? ρ' ppc)}} →
+    tailpp-ρ-shortest : ∀ {e f} {ppc : ppchain e f} →
                           ppc is-ρ-shortest → tailpp ppc is-ρ-shortest
-    tailpp-ρ-shortest {e} {f} {ppc = ppc} {{≥1}} cis =
+    tailpp-ρ-shortest {e} {f} {ppc = ppc} cis =
                           helper₂ ( begin (
                                     2 * ρ' (tailpp ppc)
                                       ≡⟨ sym lem-2xρ-len ⟩ 
                                     len (tailpp ppc as-c) 
                                       ≡⟨ lem-tailpp {ppc = ppc} ⟩
-                                    len (tail (tail (ppc as-c) {{len≥1}}) {{taillen≥1}})
-                                      ≡⟨ tail-shortest {{taillen≥1}}
-                                         (tail-shortest {c = ppc as-c} {{len≥1}} helper) ⟩
-                                    len (sc (neck (tail (ppc as-c) {{len≥1}}) {{taillen≥1}}) (pt f))
+                                    len (tail (tail (ppc as-c)))
+                                      ≡⟨ tail-shortest
+                                         (tail-shortest {c = ppc as-c} helper) ⟩
+                                    len (sc (neck (tail (ppc as-c)) ) (pt f))
                                       ≡⟨ helper₁ ⟩
                                     len (sc (pt (neckp ppc )) (pt f))
                                       ≡⟨ lem-2xρ-lambda ⟩ 2 * ρ (neckp ppc) f ∎)
@@ -189,9 +160,9 @@ module Lemma2-4-core where
                         ≡⟨ sym lem-2xρ-lambda ⟩
                       (len (sc (pt e) (pt f)) ∎)
 
-            helper₁ : len (sc (neck (tail (ppc as-c) {{len≥1}}) {{taillen≥1}}) (pt f)) ≡
+            helper₁ : len (sc (neck (tail (ppc as-c))) (pt f)) ≡
                                           len (sc (pt (neckp ppc)) (pt f))
-            helper₁ rewrite lem-neckp {ppc = ppc} {{≥1}} = refl
+            helper₁ rewrite lem-neckp {ppc = ppc} = refl
 
             helper₂ : ∀ {x y} → 2 * x ≡ 2 * y → x ≡ y
             helper₂ {x} {y} p = cancel-*-right x y (

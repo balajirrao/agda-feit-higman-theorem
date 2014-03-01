@@ -66,18 +66,18 @@ module GenPolygon where
 
   -- Set of all lines incident with a given point.
   record L# (p : P) : Set where
-    constructor _⟦_⟧
+    constructor _,_
     field
       #l : L
-      .p#l : (pt p) # (ln #l)
+      .l#p : True ((ln #l) #? (pt p) )
   open L# public
 
   -- Set of all points incident with a given line.
   record P# (l : L) : Set where
-    constructor _⟦_⟧
+    constructor _,_
     field
       #p : P
-      .l#p : (ln l) # (pt #p)
+      .p#l : True ((pt #p) #? (ln l))
   open P# public
 
   -- Axioms for Generalized Polygon
@@ -87,9 +87,8 @@ module GenPolygon where
     GP-L# : (p : P) → Inverse (setoid (L# p)) (setoid (Fin (t + 1)))
 
   -- Tail of a shortest chain is shortest
-  tail-shortest : ∀ {e f} {c : chain e f} → {{≥1 : True (1 ≤? len c) }} →
-                                          c is-shortest → tail c is-shortest
-  tail-shortest {.f} {f} {[ .f ]} {{()}} _
+  tail-shortest : ∀ {e f} {c : chain e f} → c is-shortest → tail c is-shortest
+  tail-shortest {.f} {f} {[ .f ]} cis = cis
   tail-shortest {e} {f} {.e ∷ c} cis = ≤-≥⇒≡ helper (sc-is-shorter-than c)
     where
       helper : (lambda (head c) f) ≥  len c
@@ -115,6 +114,6 @@ module GenPolygon where
                                                   ≡⟨ cis ⟩ (len (sc e g) ∎))
                                                 (n≤m+n zero _)
 
-  lem-tail-len : ∀ {e f} {c : chain e f} {{≥1 : True (1 ≤? len c)}} → len (tail c) ≡ pred (len c)
-  lem-tail-len {.f} {f} {[ .f ]} {{()}}
-  lem-tail-len {e} {f} {_∷_ .e {{e<>f}} {{e#f}} c} {{_}} = refl
+  lem-tail-len : ∀ {e f} {c : chain e f} → len (tail c) ≡ pred (len c)
+  lem-tail-len {.f} {f} {[ .f ]} = refl
+  lem-tail-len {e} {f} {_∷_ .e {{e<>f}} {{e#f}} c} = refl
