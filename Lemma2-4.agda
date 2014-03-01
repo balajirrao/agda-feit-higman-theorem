@@ -21,9 +21,11 @@ open import Misc
 module Lemma2-4 where
   open import Lemma2-4-core public
 
-  neckl : ∀ {e f} (ppc : ppchain e f) {{≥1 : True (1 ≤? ρ' ppc)}} → L# (neckp (ppc))
-  neckl {.f} {f} [ .f ] {{()}}
-  neckl {e} (_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}) {{_}} = e₁ , (fromWitness (toWitness e₁#e₂))
+  neckl : ∀ {e f} (ppc : ppchain e f) → True (1 ≤? ρ' ppc) →
+                                   Subset L (λ l → pt e # ln l × ln l # pt (neckp ppc))
+  neckl {.f} {f} [ .f ] ()
+  neckl {e} (_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}) _ =
+                           record { elem = e₁; proof = (toWitness e#e₁) , toWitness e₁#e₂ }
 
   -- In the below two lemmas we prove that to ensure λ < n
   -- we need to ensure ρ < n / 2
@@ -71,7 +73,7 @@ module Lemma2-4 where
 
     -- first line along the shortest pp chain
     e₁⋆ : L
-    e₁⋆ = #l (neckl (sppc e f))
+    e₁⋆ = Subset.elem (neckl (sppc e f) ≥1)
 
     record A : Set where
       field
@@ -100,12 +102,11 @@ module Lemma2-4 where
                                    (lem-tailpp-ρ {ppc = sppc e f})
     
 
-
     ρ-B₀ : (x : B) → ρ (B.e₂ x) f ≤ ρ e f
     ρ-B₀ x = begin
                ρ e₂ f
                  ≤⟨ sppc-ρ-shorter-than (e₂ ∶⟨ e₁⋆ ⟩∶ sppc e₂⋆ f)
-                   {{e₂#e₁⋆}} {{l#p (neckl (sppc e f))}} ⟩
+                   {{e₂#e₁⋆}} {{fromWitness (proj₂ (Subset.proof (neckl (sppc e f) ≥1)))}} ⟩
                suc (ρ e₂⋆ f)
                  ≡⟨  cong suc (ρ-A {record { e₂ = e₂⋆; e₂≡e₂⋆ = refl }}) ⟩
                suc (pred (ρ e f))
@@ -117,7 +118,9 @@ module Lemma2-4 where
     -- We next show that if ρ e₂ f < ρ e f, we have a contradiction. We construct
     -- a chain e e₁⋆ (sc e₂ f)
     ρ-B-ppc : (x : B) → ppchain e f
-    ρ-B-ppc x = (e ∶⟨ e₁⋆ ⟩∶ sppc e₂ f) {{{!!}}} {{fromWitness (#sym (toWitness (e₂#e₁⋆)))}}
+    ρ-B-ppc x = (e ∶⟨ e₁⋆ ⟩∶ sppc e₂ f)
+                   {{fromWitness (proj₁ (Subset.proof (neckl (sppc e f) ≥1)))}}
+                   {{fromWitness (#sym (toWitness (e₂#e₁⋆)))}}
             where open B x
     
     -- This chain has ρ' < ⌈ n /2⌉ so that we can invoke A₂
@@ -134,3 +137,4 @@ module Lemma2-4 where
     
     ρ-B : {x : B} → ρ (B.e₂ x) f ≡ ρ e f
     ρ-B {x} = ≤-≥⇒≡ (ρ-B₀ x) (pred-mono (≰⇒> (ρ-B₁ x)))
+
