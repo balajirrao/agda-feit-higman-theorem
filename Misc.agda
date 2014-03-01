@@ -67,3 +67,7 @@ module Misc where
                     con 2 :+ y :+ (y :+ con 0))) refl ⌈ x /2⌉
                                      = (m≤m {2}) +-mono lem-2x⌈n/2⌉ {x}
 
+  record Subset (A : Set) (P : A → Set) : Set where
+    field
+      elem : A
+      .proof  : P elem
