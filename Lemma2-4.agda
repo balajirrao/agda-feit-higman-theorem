@@ -56,6 +56,23 @@ module Lemma2-4 where
                               (⌈ n /2⌉ ∎)
     where open Data.Nat.≤-Reasoning
 
+  A₁-ρ : (e f : P) → ∃ (λ (ppc : ppchain e f) → ρ' ppc ≤ ⌊ n /2⌋)
+  A₁-ρ e f = (proj₁ (A₁ (pt e) (pt f))) as-ppc ,
+                    (begin
+                      ρ' _
+                         ≡⟨ sym lem-len/2-ρ ⟩
+                      ⌊ len (((proj₁ (A₁ (pt e) (pt f))) as-ppc) as-c) /2⌋
+                        ≡⟨ cong ⌊_/2⌋ (cong len (lem-id₀ {c = (proj₁ (A₁ (pt e) (pt f)))})) ⟩
+                      ⌊ len (proj₁ (A₁ (pt e) (pt f))) /2⌋
+                        ≤⟨ ⌊n/2⌋-mono (proj₂ (A₁ (pt e) (pt f))) ⟩
+                      (⌊ n /2⌋ ∎))
+         where open Data.Nat.≤-Reasoning
+              
+  A₁'-ρ : ∀ {e f} → (ρ e f) ≤ ⌊ n /2⌋
+  A₁'-ρ {e} {f} with sppc-ρ-shorter-than (proj₁ (A₁-ρ e f)) | proj₂ (A₁-ρ e f)
+  A₁'-ρ {e} {f} | a | b = begin ρ' (sppc e f) ≤⟨ a ⟩ ρ' (proj₁ (A₁-ρ e f)) ≤⟨ b ⟩ ⌊ n /2⌋  ∎
+        where open Data.Nat.≤-Reasoning
+                                
   -- Axiom A₂ in ρ terms, but now with proof
   A₂-ρ : ∀ {e f} (ppc ppc' : ∃ (λ (z : ppchain e f) → ρ' z < ⌈ n /2⌉)) →
                                                  (proj₁ ppc) ≡ (proj₁ ppc')
@@ -65,7 +82,7 @@ module Lemma2-4 where
   ... | z rewrite lem-id₁ {ppc = ppc} | lem-id₁ {ppc = ppc'} = z
 
   -- We have three classes of points e₂ A B and C
-  module e₂-classes {e f : P} {{≥1 : True (1 ≤? ρ e f)}} {{≤n : True (suc (ρ e f) ≤? ⌈ n /2⌉)}} where
+  module e₂-classes {e f : P} {≥1 : True (1 ≤? ρ e f)} {≤n : True (suc (ρ e f) ≤? ⌈ n /2⌉)} where
   
     -- second point along the shortest pp chain
     e₂⋆ : P
@@ -91,8 +108,10 @@ module Lemma2-4 where
       field
         e₂ : P
         e₁ : L
-        .e#e₁ : True ((pt e) #? (ln e₁))
-        .e₁≢e₁⋆ : e₁ ≢ e₁⋆
+        .e#e₁ : True ((ln e₁) #? (pt e) )
+        .e₂#e₁ : True ((pt e₂) #? (ln e₁))
+        e₁≢e₁⋆ : e₁ ≢ e₁⋆
+        e₂≢e : (pt e₂) ≢ (pt e)
     
 
     -- ρ e₂ f ≡ r - 1 for class A
@@ -138,3 +157,62 @@ module Lemma2-4 where
     ρ-B : {x : B} → ρ (B.e₂ x) f ≡ ρ e f
     ρ-B {x} = ≤-≥⇒≡ (ρ-B₀ x) (pred-mono (≰⇒> (ρ-B₁ x)))
 
+    -- The third class of points e₂
+    ρ-C₀ : (x : C) → ρ (C.e₂ x) f ≤ 1 + ρ e f
+    ρ-C₀ x = sppc-ρ-shorter-than (e₂ ∶⟨ e₁ ⟩∶ sppc e f)
+      where open C x
+
+    ρ-C-c₁ : (x : C) → ρ (C.e₂ x) f ≤ ρ e f → chain (ln (C.e₁ x)) (pt f)
+    ρ-C-c₁ x t = _∷_ (ln e₁) {{fromWitnessFalse (λ ())}} {{fromWitness (#sym (toWitness e₂#e₁))}} (sc (pt e₂) (pt f))
+      where open C x
+
+    ρ-C-c₂ : (x : C) → chain (ln (C.e₁ x)) (pt f)
+    ρ-C-c₂ x = _∷_ (ln e₁) {{fromWitnessFalse (λ ())}} {{e#e₁}} (sc (pt e) (pt f))
+      where open C x
+
+    ρ-C-c₂-len : {x : C} → True (suc (ρ e f) ≤? ⌈ (pred (n)) /2⌉ ) → len (ρ-C-c₂ x) < n
+    ρ-C-c₂-len {x} ≤pred-n = begin
+                             2 + lambda (pt e) (pt f)
+                               ≡⟨ cong (_+_ 2) lem-2xρ-lambda ⟩
+                             2 + 2 * ρ e f
+                               ≡⟨ solve 1 (λ y → con 2 :+ con 2 :* y :=
+                                          con 2 :* (con 1 :+ y)) refl
+                                     (ρ e f) ⟩               
+                             2 * (1 + ρ e f)
+                               ≤⟨ m≤m {2} *-mono toWitness ≤pred-n ⟩
+                             2 * ⌈ (pred (n)) /2⌉
+                               ≤⟨ lem-2x⌈n/2⌉ ⟩
+                             n ∎ 
+      where open C x
+            open Data.Nat.≤-Reasoning
+
+    -- if ρ < (n - 1) / 2
+    ρ-C-c₁-len : {x : C} {p : ρ (C.e₂ x) f ≤ ρ e f} → True (suc(ρ e f) ≤? ⌈ (pred (n)) /2⌉ )→ len (ρ-C-c₁ x p) < n
+    ρ-C-c₁-len {x} {p} ≤pred-n = begin 2 + lambda (pt e₂) (pt f) ≤⟨ s≤s (s≤s helper) ⟩ 2 + lambda (pt e) (pt f) ≤⟨ (ρ-C-c₂-len {x}) ≤pred-n ⟩ (n ∎)
+      where open C x
+            
+            helper : lambda (pt e₂) (pt f) ≤ lambda (pt e) (pt f)
+            helper rewrite lem-2xρ-lambda {e₂} {f} | lem-2xρ-lambda {e} {f} = m≤m {2} *-mono p
+            open Data.Nat.≤-Reasoning
+
+    ρ-C-≤-pred-n : (x : C) → ρ (C.e₂ x) f ≤ ρ e f → suc(ρ e f) ≤ ⌈ (pred (n)) /2⌉ → ⊥
+    ρ-C-≤-pred-n x v u = e₂≢e (cong neck (A₂ (ρ-C-c₁ x v , ρ-C-c₁-len {x} {v} (fromWitness u)) (ρ-C-c₂ x , ρ-C-c₂-len {x} (fromWitness u))))
+      where open C x
+      
+    ρ-C-ppc : (x : C) → ppchain e f
+    ρ-C-ppc x = ((e ∶⟨ C.e₁ x ⟩∶ sppc (C.e₂ x) f)) {{fromWitness (#sym (toWitness (C.e#e₁ x)))}} {{fromWitness (#sym (toWitness (C.e₂#e₁ x)))}}
+
+    ρ-C-ppc-≤n/2 : (x : C) → ρ (C.e₂ x) f < ρ e f  → (ρ' (ρ-C-ppc x) < ⌈ n /2⌉)
+    ρ-C-ppc-≤n/2 x l = begin
+                           suc (suc (ρ e₂ f)) ≤⟨ s≤s l ⟩
+                           suc (ρ e f) ≤⟨ toWitness ≤n ⟩ (⌈ n /2⌉ ∎)
+      where open C x
+            open Data.Nat.≤-Reasoning
+  
+    -- The case when 2 * r = ( n - 1 ).
+    -- We know that ρ e₂ f ≤ n/2 from Axiom 1
+    ρ-C₁-pred-n₀ : (x : C) → 2 * (ρ e f) ≡ pred (n) → ρ (C.e₂ x) f < ρ e f → ⊥
+    ρ-C₁-pred-n₀ x p q with A₂-ρ (ρ-C-ppc x , ρ-C-ppc-≤n/2 x q ) (sppc e f , toWitness ≤n)
+    ... | z = C.e₁≢e₁⋆ x (helper z {≥1₁ = ≥1})
+        where helper : {pc pc' : ppchain e f} → pc ≡ pc' → {≥1₀ : True (1 ≤? ρ' pc)} → {≥1₁ : True (1 ≤? ρ' pc')} → Subset.elem (neckl pc ≥1₀) ≡ Subset.elem (neckl pc' ≥1₁)
+              helper refl = refl
