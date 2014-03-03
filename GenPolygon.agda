@@ -40,7 +40,7 @@ module GenPolygon where
   -- A₂ : There exists at most one irreducible chain of length less than n from e to f
   postulate
     A₁ : (e f : X) → ∃ (λ (c : chain e f) → len c ≤ n)
-    A₂ : ∀ {e f} (c c' : ∃ (λ (c : chain e f) → len c < n)) → (proj₁ c) ≡ (proj₁ c')
+    A₂ : ∀ {e f} (c c' : Subset (chain e f) (λ z → len z < n)) → c ≡ c'
  
   -- From the A₁ postulate it follows that -- TODO : prove it ?
   postulate
@@ -68,17 +68,15 @@ module GenPolygon where
   record L# (p : P) : Set where
     constructor _,_
     field
-      #l : L
-      .l#p : True ((ln #l) #? (pt p) )
-  open L# public
+      l : L
+      .# : True ((ln l) #? (pt p) )
 
   -- Set of all points incident with a given line.
   record P# (l : L) : Set where
     constructor _,_
     field
-      #p : P
-      .p#l : True ((pt #p) #? (ln l))
-  open P# public
+      p : P
+      .# : True ((pt p) #? (ln l))
 
   -- Axioms for Generalized Polygon
   postulate
