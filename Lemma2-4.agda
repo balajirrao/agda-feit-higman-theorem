@@ -16,6 +16,7 @@ open import Data.Nat
 open import Data.Nat.Properties
 open SemiringSolver
 
+open import Function 
 open import Misc
 
 module Lemma2-4 where
@@ -74,12 +75,13 @@ module Lemma2-4 where
         where open Data.Nat.≤-Reasoning
                                 
   -- Axiom A₂ in ρ terms, but now with proof
-  A₂-ρ : ∀ {e f} (ppc ppc' : ∃ (λ (z : ppchain e f) → ρ' z < ⌈ n /2⌉)) →
-                                                 (proj₁ ppc) ≡ (proj₁ ppc')
-  A₂-ρ (ppc , p) (ppc' , p') with cong _as-ppc
-                                  (A₂ (ppc as-c , lem-ρ-len<n p)
+  A₂-ρ : ∀ {e f} (ppc ppc' : Subset (ppchain e f) (λ z → ρ' z < ⌈ n /2⌉)) →
+                                                 ppc ≡ ppc'
+  A₂-ρ (ppc , p) (ppc' , p') with 
+                                  cong (λ x → Subset.elem x as-ppc) (A₂ (ppc as-c , lem-ρ-len<n p)
                                   (ppc' as-c , lem-ρ-len<n p'))
-  ... | z rewrite lem-id₁ {ppc = ppc} | lem-id₁ {ppc = ppc'} = z
+  ... | z rewrite lem-id₁ {ppc = ppc} | lem-id₁ {ppc = ppc'} | z = refl
+
 
   -- We have three classes of points e₂ A B and C
   module e₂-classes {e f : P} {≥1 : True (1 ≤? ρ e f)} {≤n : True (suc (ρ e f) ≤? ⌈ n /2⌉)} where
@@ -152,7 +154,7 @@ module Lemma2-4 where
 
     ρ-B₁ : (x : B) → ρ (B.e₂ x) f < ρ e f → ⊥
     ρ-B₁ x l with (A₂-ρ (ρ-B-ppc x , ρ-B-ppc-≤n/2 {x} l) (sppc e f , toWitness ≤n))
-    ... | z = ⊥-elim (B.e₂≢e₂⋆ x (cong neckp z))
+    ... | z = ⊥-elim (B.e₂≢e₂⋆ x (cong (neckp ∘ Subset.elem) z))
     
     ρ-B : {x : B} → ρ (B.e₂ x) f ≡ ρ e f
     ρ-B {x} = ≤-≥⇒≡ (ρ-B₀ x) (pred-mono (≰⇒> (ρ-B₁ x)))
@@ -196,7 +198,7 @@ module Lemma2-4 where
             open Data.Nat.≤-Reasoning
 
     ρ-C-≤-pred-n : (x : C) → ρ (C.e₂ x) f ≤ ρ e f → suc(ρ e f) ≤ ⌈ (pred (n)) /2⌉ → ⊥
-    ρ-C-≤-pred-n x v u = e₂≢e (cong neck (A₂ (ρ-C-c₁ x v , ρ-C-c₁-len {x} {v} (fromWitness u)) (ρ-C-c₂ x , ρ-C-c₂-len {x} (fromWitness u))))
+    ρ-C-≤-pred-n x v u = e₂≢e (cong (neck ∘ Subset.elem) (A₂ (ρ-C-c₁ x v , ρ-C-c₁-len {x} {v} (fromWitness u)) (ρ-C-c₂ x , ρ-C-c₂-len {x} (fromWitness u))))
       where open C x
       
     ρ-C-ppc : (x : C) → ppchain e f
@@ -213,6 +215,6 @@ module Lemma2-4 where
     -- We know that ρ e₂ f ≤ n/2 from Axiom 1
     ρ-C₁-pred-n₀ : (x : C) → 2 * (ρ e f) ≡ pred (n) → ρ (C.e₂ x) f < ρ e f → ⊥
     ρ-C₁-pred-n₀ x p q with A₂-ρ (ρ-C-ppc x , ρ-C-ppc-≤n/2 x q ) (sppc e f , toWitness ≤n)
-    ... | z = C.e₁≢e₁⋆ x (helper z {≥1₁ = ≥1})
+    ... | z = C.e₁≢e₁⋆ x (helper (cong Subset.elem z) {≥1₁ = ≥1})
         where helper : {pc pc' : ppchain e f} → pc ≡ pc' → {≥1₀ : True (1 ≤? ρ' pc)} → {≥1₁ : True (1 ≤? ρ' pc')} → Subset.elem (neckl pc ≥1₀) ≡ Subset.elem (neckl pc' ≥1₁)
               helper refl = refl
