@@ -4,6 +4,8 @@ open import Data.Nat.Properties
 
 open import Data.Bool
 
+open import Relation.Binary
+
 open import Relation.Nullary.Core
 open import Relation.Nullary.Decidable
 
@@ -57,6 +59,20 @@ module Misc where
     oddEven oddOne = evenSuc evenZero
     oddEven (oddSuc p) = evenSuc (oddEven p)
 
+    oddEvenEither : ∀ {x} → Even x → Odd x → ⊥
+    oddEvenEither evenZero ()
+    oddEvenEither (evenSuc p) (oddSuc x) = oddEvenEither p x
+
+    data Parity (k : ℕ) : Set where
+      isEven : Even k → Parity k
+      isOdd : Odd k → Parity k
+
+    parity : (k : ℕ) → Parity k
+    parity zero = isEven evenZero
+    parity (suc k) with parity k
+    parity (suc k) | isEven x = isOdd (evenOdd x)
+    parity (suc k) | isOdd x = isEven (oddEven x)
+
   open EvenOdd public
 
   lem-2x⌈n/2⌉ : ∀ {x} → 2 * ⌈ x /2⌉ ≤ suc x
@@ -68,6 +84,13 @@ module Misc where
                                      = (m≤m {2}) +-mono lem-2x⌈n/2⌉ {x}
 
   record Subset (A : Set) (P : A → Set) : Set where
+    constructor _,_
     field
       elem : A
       .proof  : P elem
+
+  ≤-≢⇒< : ∀ {x y} → x ≤ y → x ≢ y → x < y
+  ≤-≢⇒< {zero} {zero} z≤n q = ⊥-elim (q refl)
+  ≤-≢⇒< {zero} {suc y} z≤n q = s≤s z≤n
+  ≤-≢⇒< {suc x} {zero} () q
+  ≤-≢⇒< {suc x} {suc y} (s≤s p) q = s≤s (≤-≢⇒< p (λ x₁ → q (cong suc x₁)))
