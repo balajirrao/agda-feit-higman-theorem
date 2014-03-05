@@ -94,3 +94,6 @@ module Misc where
   ≤-≢⇒< {zero} {suc y} z≤n q = s≤s z≤n
   ≤-≢⇒< {suc x} {zero} () q
   ≤-≢⇒< {suc x} {suc y} (s≤s p) q = s≤s (≤-≢⇒< p (λ x₁ → q (cong suc x₁)))
+
+  +-comm : ∀ {x y} → x + y ≡ y + x
+  +-comm {x} {y} = solve 2 (λ x₁ x₂ → x₁ :+ x₂ := x₂ :+ x₁) refl x y
