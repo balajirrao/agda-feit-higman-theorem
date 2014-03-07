@@ -11,6 +11,8 @@ open import Relation.Nullary.Decidable
 
 open import Relation.Binary.PropositionalEquality as PropEq
 
+open import Function
+
 open SemiringSolver
 
 module Misc where
@@ -72,6 +74,15 @@ module Misc where
     parity (suc k) with parity k
     parity (suc k) | isEven x = isOdd (evenOdd x)
     parity (suc k) | isOdd x = isEven (oddEven x)
+
+    lem-2x⌈n/2⌉-even : ∀ {x} → Even x → 2 * ⌈ x /2⌉ ≡ x
+    lem-2x⌈n/2⌉-even {zero} ex = refl
+    lem-2x⌈n/2⌉-even {suc zero} ()
+    lem-2x⌈n/2⌉-even {suc (suc x)} (evenSuc ex)
+                     rewrite solve 1
+                       (λ y → con 1 :+ (y :+ (con 1 :+ y :+ con 0)) :=
+                          (con 2 :+ y :+ (y :+ con 0))) refl (⌊ suc x /2⌋) =
+                                         cong (suc ∘ suc) (lem-2x⌈n/2⌉-even ex)
 
   open EvenOdd public
 
