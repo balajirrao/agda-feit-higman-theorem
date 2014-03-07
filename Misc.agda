@@ -97,3 +97,7 @@ module Misc where
 
   +-comm : ∀ {x y} → x + y ≡ y + x
   +-comm {x} {y} = solve 2 (λ x₁ x₂ → x₁ :+ x₂ := x₂ :+ x₁) refl x y
+
+  <1⇒≡0  : ∀ {m} → 1 > m → m ≡ 0
+  <1⇒≡0 {zero} x = refl
+  <1⇒≡0 {suc m} (s≤s ())

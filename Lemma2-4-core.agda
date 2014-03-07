@@ -9,7 +9,10 @@ open import Data.Bool.Properties
 open import Data.Empty
 open import Data.Unit hiding (_≤?_; _≤_)
 
+open import Data.Product
+
 open import Data.Nat
+open import Function
 
 open import Data.Nat.Properties
 open SemiringSolver
@@ -107,35 +110,56 @@ module Lemma2-4-core where
 
   sppc-is-ρ-shortest : ∀ {e f} → (sppc e f) is-ρ-shortest
   sppc-is-ρ-shortest = refl
+ 
+  Neck : P → Set
+  Neck e = Σ (L# e) (P# Function.∘ Subset.elem)
 
-  -- neck of a ppchain is a point
-  neckp : ∀ {e f} (ppc : ppchain e f) → P
-  neckp {.f} {f} [ .f ] = f
-  neckp {e} (_∶⟨_⟩∶_ {e₂} .e e₁ ppc {{e#e₁}} {{e₁#e₂}}) = e₂
+  neck-e₂ : ∀ {e} → Neck e → P
+  neck-e₂ nck = Subset.elem (proj₂ nck)
   
-  tailpp : ∀ {e f} → (ppc : ppchain e f) → ppchain (neckp ppc) f
-  tailpp {.f} {f} [ .f ] = [ f ]
+  neck-e₁ : ∀ {e} → Neck e → L
+  neck-e₁ nck = Subset.elem (proj₁ nck) 
+
+  .neck-e#e₁ : ∀ {e} → (nck : Neck e) → True ((pt e) #? (ln (neck-e₁ nck)))
+  neck-e#e₁ nck =  Subset.proof (proj₁ nck)
+
+  .neck-e₁#e₂ : ∀ {e} → (nck : Neck e) → True ((ln (neck-e₁ nck)) #? (pt (neck-e₂ nck)))
+  neck-e₁#e₂ nck =  Subset.proof (proj₂ nck)
+       
+  lem-ρ'≥ρ : ∀ {e f} {ppc : ppchain e f} →  True (1 ≤? ρ e f) → True (1 ≤? ρ' ppc)
+  lem-ρ'≥ρ {e} {f} {ppc} ≥1 = fromWitness
+                                (begin
+                                 1 ≤⟨ toWitness ≥1 ⟩ ρ e f ≤⟨ sppc-ρ-shorter-than ppc ⟩ (ρ' ppc ∎))
+    where open Data.Nat.≤-Reasoning
+
+  ppneck : ∀ {e f} (ppc : ppchain e f) → {≥1 : True (1 ≤? ρ' ppc)} → Neck e
+  ppneck [ e ] {()}
+  ppneck (_∶⟨_⟩∶_  {e₂} e e₁ ppc {{e#e₁}} {{e₁#e₂}}) =  (e₁ , e#e₁) , (e₂ , e₁#e₂)
+  
+  tailpp : ∀ {e f} → (ppc : ppchain e f) → {≥1 : True (1 ≤? ρ' ppc)} → ppchain (neck-e₂ (ppneck ppc)) f
+  tailpp {.f} {f} [ .f ] {()}
   tailpp (_∶⟨_⟩∶_ _ _ ppc) = ppc
 
-  lem-tailpp-ρ : ∀ {e f} {ppc : ppchain e f} → ρ' (tailpp ppc) ≡ pred (ρ' ppc)
-  lem-tailpp-ρ {.f} {f} {[ .f ]} = refl
+  lem-tailpp-ρ : ∀ {e f} {ppc : ppchain e f} {≥1 : True (1 ≤? ρ' ppc)} → ρ' (tailpp ppc) ≡ pred (ρ' ppc)
+  lem-tailpp-ρ {.f} {f} {[ .f ]} {()}
   lem-tailpp-ρ {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} = refl
 
+
   module ρ-shortest  where
-    lem-neckp : {e f : P} {ppc : ppchain e f} → pt (neckp ppc) ≡ 
+    lem-neckp : {e f : P} {ppc : ppchain e f} {≥1 : True (1 ≤? ρ' ppc)} → pt (neck-e₂ (ppneck ppc)) ≡ 
                   neck (tail (ppc as-c))
                       
-    lem-neckp {.f} {f} {[ .f ]} = refl
+    lem-neckp {.f} {f} {[ .f ]} {()}
     lem-neckp {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} = refl
 
-    lem-tailpp : ∀ {e f} {ppc : ppchain e f} →
+    lem-tailpp : ∀ {e f} {ppc : ppchain e f} {≥1 : True (1 ≤? ρ' ppc)} →
                          len ((tailpp ppc) as-c) ≡ len (tail (tail (ppc as-c)))
-    lem-tailpp {.f} {f} {[ .f ]} = refl
+    lem-tailpp {.f} {f} {[ .f ]} {()}
     lem-tailpp {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} = refl
 
-    tailpp-ρ-shortest : ∀ {e f} {ppc : ppchain e f} →
+    tailpp-ρ-shortest : ∀ {e f} {ppc : ppchain e f} → {≥1 : True (1 ≤? ρ' ppc)} →
                           ppc is-ρ-shortest → tailpp ppc is-ρ-shortest
-    tailpp-ρ-shortest {e} {f} {ppc = ppc} cis =
+    tailpp-ρ-shortest {e} {f} {ppc = ppc} {≥1} cis =
                           helper₂ ( begin (
                                     2 * ρ' (tailpp ppc)
                                       ≡⟨ sym lem-2xρ-len ⟩ 
@@ -146,8 +170,8 @@ module Lemma2-4-core where
                                          (tail-shortest {c = ppc as-c} helper) ⟩
                                     len (sc (neck (tail (ppc as-c)) ) (pt f))
                                       ≡⟨ helper₁ ⟩
-                                    len (sc (pt (neckp ppc )) (pt f))
-                                      ≡⟨ lem-2xρ-lambda ⟩ 2 * ρ (neckp ppc) f ∎)
+                                    len (sc (pt (neck-e₂ (ppneck ppc))) (pt f))
+                                      ≡⟨ lem-2xρ-lambda ⟩ 2 * ρ (neck-e₂ (ppneck ppc)) f ∎)
                                   )
       where open ≡-Reasoning
             helper : len (ppc as-c) ≡ len (sc (pt e) (pt f))
@@ -161,8 +185,8 @@ module Lemma2-4-core where
                       (len (sc (pt e) (pt f)) ∎)
 
             helper₁ : len (sc (neck (tail (ppc as-c))) (pt f)) ≡
-                                          len (sc (pt (neckp ppc)) (pt f))
-            helper₁ rewrite lem-neckp {ppc = ppc} = refl
+                                          len (sc (pt (neck-e₂ (ppneck ppc))) (pt f))
+            helper₁ rewrite sym (lem-neckp {ppc = ppc} {≥1}) = refl
 
             helper₂ : ∀ {x y} → 2 * x ≡ 2 * y → x ≡ y
             helper₂ {x} {y} p = cancel-*-right x y (
@@ -173,3 +197,11 @@ module Lemma2-4-core where
                                     ≡⟨ solve 1 (λ a → con 2 :* a := a :* con 2) refl y ⟩
                                   (y * 2 ∎))
   open ρ-shortest public using (tailpp-ρ-shortest)
+
+  sppc-irred : ∀ {e f} → irred (sppc e f as-c)
+  sppc-irred {e} {f} rewrite lem-id₀ {c = sc (pt e) (pt f)} = shortest-irred (sc (pt e) (pt f)) refl
+
+  ρ≡0⇒e≡f : ∀ {e f} → ρ e f ≡ 0 → e ≡ f
+  ρ≡0⇒e≡f {e} {f} eq with sppc e f
+  ρ≡0⇒e≡f eq | [ e ] = refl
+  ρ≡0⇒e≡f () | _∶⟨_⟩∶_ e e₁ c {{e#e₁}} {{e₁#e₂}}

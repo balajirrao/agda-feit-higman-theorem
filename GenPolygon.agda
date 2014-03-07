@@ -40,7 +40,7 @@ module GenPolygon where
   -- A₂ : There exists at most one irreducible chain of length less than n from e to f
   postulate
     A₁ : (e f : X) → ∃ (λ (c : chain e f) → len c ≤ n)
-    A₂ : ∀ {e f} (c c' : Subset (chain e f) (λ z → len z < n)) → c ≡ c'
+    A₂ : ∀ {e f} (c c' : Subset (chain e f) (λ z → len z < n × irred z)) → c ≡ c'
  
   -- From the A₁ postulate it follows that -- TODO : prove it ?
   postulate
@@ -65,24 +65,17 @@ module GenPolygon where
   A₁' {e} {f} | a | b = begin len (sc e f) ≤⟨ a ⟩ len (proj₁ (A₁ e f)) ≤⟨ b ⟩ n  ∎
 
   -- Set of all lines incident with a given point.
-  record L# (p : P) : Set where
-    constructor _,_
-    field
-      l : L
-      .# : True ((ln l) #? (pt p) )
-
-  -- Set of all points incident with a given line.
-  record P# (l : L) : Set where
-    constructor _,_
-    field
-      p : P
-      .# : True ((pt p) #? (ln l))
+  L# : (p : P) → Set
+  L# p = Subset L (λ l → True (pt p #? ln l))
+   
+  P# : (l : L) → Set
+  P# l = Subset P (λ p → True (ln l #? pt p))
 
   -- Axioms for Generalized Polygon
   postulate
     s t : ℕ
-    GP-P# : (l : L) → Inverse (setoid (P# l)) (setoid (Fin (s + 1)))
-    GP-L# : (p : P) → Inverse (setoid (L# p)) (setoid (Fin (t + 1)))
+    GP-P : (l : L) → Inverse (setoid (P# l)) (setoid (Fin (1 + s)))
+    GP-L : (p : P) → Inverse (setoid (L# p)) (setoid (Fin (1 + t)))
 
   -- Tail of a shortest chain is shortest
   tail-shortest : ∀ {e f} {c : chain e f} → c is-shortest → tail c is-shortest
@@ -99,15 +92,15 @@ module GenPolygon where
 
  
   -- shortest chains are irreducible
-  shortest-irred : ∀ {e f} (c : chain e f) → c is-shortest → {{≥2 : True (2 ≤? len c)}} → irred c
-  shortest-irred {.f} {f} [ .f ] cis {{()}} 
-  shortest-irred {e} {f} (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) cis {{()}}
-  shortest-irred {.e} {g} (e ∷ f ∷ c) cis {{_}} = λ {n} x → ≤⇒≯
+  shortest-irred : ∀ {e f} (c : chain e f) → c is-shortest → irred c
+  shortest-irred {.f} {f} [ .f ] cis = tt
+  shortest-irred {e} {f} (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) cis = tt
+  shortest-irred {.e} {g} (e ∷ f ∷ c) cis = λ {n} x → ≤⇒≯
                                               (begin _ ≤⟨ s≤s (
                                                 sc-is-shorter-than
-                                                  proj₁ (short-circuit (_th-segment-of_ n (e ∷ f ∷ c) {{tt}} ) x)) ⟩
+                                                  proj₁ (short-circuit (_th-segment-of_ n (e ∷ f ∷ c) ) x)) ⟩
                                                 _
-                                                  ≤⟨ proj₂ (short-circuit (_th-segment-of_ n (e ∷ f ∷ c) {{tt}} ) x) ⟩
+                                                  ≤⟨ proj₂ (short-circuit (_th-segment-of_ n (e ∷ f ∷ c) ) x) ⟩
                                                 _
                                                   ≡⟨ cis ⟩ (len (sc e g) ∎))
                                                 (n≤m+n zero _)

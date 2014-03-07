@@ -118,13 +118,13 @@ module IncidenceGeometry where
                                       total-chain = cong (_∷_ e) (Segment.total-chain s)}
 
   -- Get the nth segment of a chain.
-  _th-segment-of_ : ∀ {e f} (n : ℕ) (c : chain e f) → {{≥2 : True (2 ≤? len c)}} {{≤len : True (n ≤? pred (pred (len c)))}} → Segment c
-  _th-segment-of_ {.f} {f} n [ .f ] {{()}} {{≤len}}
-  _th-segment-of_ {e} {f} n (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) {{()}} {{≤len}}
-  _th-segment-of_ zero (e ∷ f ∷ [ g ]) {{tt}} {{tt}} = record { e₀ = e; e₁ = f; e₂ = g; chain-prev = [ e ]; chain-next = [ g ] }
-  _th-segment-of_ {e} {f} (suc n) (_∷_ {f₁} .e {{e<>f}} {{e#f}} (_∷_ .f₁ {{e<>f₁}} {{e#f₁}} [ .f ])) {{tt}} {{()}}
-  _th-segment-of_ zero (e ∷ f ∷ g ∷ c) {{≥2}} {{≤len}} = record { e₀ = e; e₁ = f; e₂ = g; chain-prev = [ e ]; chain-next = g ∷ c }
-  _th-segment-of_ (suc n) (_ ∷ f ∷ g ∷ c) {{≥2}} {{≤len}} = segment-⊂ (_th-segment-of_ n (f ∷ g ∷ c) {{tt}} {{fromWitness (pred-mono (toWitness ≤len))}})
+  _th-segment-of_ : ∀ {e f} (n : ℕ) (c : chain e f) → {≥2 : True (2 ≤? len c)} {≤len : True (n ≤? pred (pred (len c)))} → Segment c
+  _th-segment-of_ {.f} {f} n [ .f ] {()} {≤len}
+  _th-segment-of_ {e} {f} n (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) {()} {≤len}
+  _th-segment-of_ zero (e ∷ f ∷ [ g ])  = record { e₀ = e; e₁ = f; e₂ = g; chain-prev = [ e ]; chain-next = [ g ] }
+  _th-segment-of_ {e} {f} (suc n) (_∷_ {f₁} .e {{e<>f}} {{e#f}} (_∷_ .f₁ {{e<>f₁}} {{e#f₁}} [ .f ])) {tt} {()}
+  _th-segment-of_ zero (e ∷ f ∷ g ∷ c) = record { e₀ = e; e₁ = f; e₂ = g; chain-prev = [ e ]; chain-next = g ∷ c }
+  _th-segment-of_ (suc n) (_ ∷ f ∷ g ∷ c) {≥2} {≤len} = segment-⊂ (_th-segment-of_ n (f ∷ g ∷ c) {_} {fromWitness (pred-mono (toWitness ≤len))})
 
   -- reducible predicate for segments
   reducible : ∀ {e f} {c : chain e f} → Segment c → Set
@@ -153,11 +153,21 @@ module IncidenceGeometry where
                                                            len c + suc (suc (len c')) ∎)
 
   -- irred predicate for chains
-  irred : ∀ {e f} (c : chain e f) → {{≥2 : True (2 ≤? len c)}} → Set
-  irred {.f} {f} [ .f ] {{()}}
-  irred {e} {f} (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) {{()}}
-  irred (e ∷ f ∷ c) {{≥2}} = {n : _} {{≤len : True (n ≤? len c)}} →
-                               reducible (_th-segment-of_ n (e ∷ f ∷ c) {{tt}} ) → ⊥
+  irred : ∀ {e f} (c : chain e f) → Set
+  irred {.f} {f} [ .f ] = ⊤
+  irred {e} {f} (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) = ⊤
+  irred (e ∷ f ∷ c) = {n : _} {≤len : True (n ≤? len c)} →
+                               reducible (_th-segment-of_ n (e ∷ f ∷ c) ) → ⊥
 
 
+  irred-∷ : ∀ {y z} (x : X) (c : chain y z) → {≥2 : True (2 ≤? len c)} →
+                      .{x<>y : False (x ≟ y)} → .{x#y : True (x #? y)} →
+                      (¬x#z : x # (neck c) → ⊥) → irred c → irred (x ∷ c)
+  irred-∷ _ [ e₃ ] {≥2 = ()} 
+  irred-∷ _ (_∷_ e₃ [ ._ ]) {≥2 = ()}
+  irred-∷ x (e₃ ∷ z ∷ c) ¬x#z ic = λ {m} {≤len} x₁ → helper {m} {≤len} x₁
+    where helper : {k : ℕ} → {≤len : True (k ≤? (suc (len c)))} →
+                 reducible (_th-segment-of_ k (x ∷ e₃ ∷ z ∷ c) {_} {≤len}) → ⊥
+          helper {zero} x₁ = ¬x#z (toWitness x₁)
+          helper {suc k} {≤len} x₁ = ic {k} {fromWitness (pred-mono (toWitness ≤len))} x₁
 
