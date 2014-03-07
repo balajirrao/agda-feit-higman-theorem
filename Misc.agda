@@ -84,6 +84,11 @@ module Misc where
                           (con 2 :+ y :+ (y :+ con 0))) refl (⌊ suc x /2⌋) =
                                          cong (suc ∘ suc) (lem-2x⌈n/2⌉-even ex)
 
+    lem-even⇒⌊≡⌋ : ∀ {m} → Even m → ⌊ m /2⌋ ≡ ⌈ m /2⌉
+    lem-even⇒⌊≡⌋ {zero} em = refl
+    lem-even⇒⌊≡⌋ {suc zero} ()
+    lem-even⇒⌊≡⌋ {suc (suc m)} (evenSuc em) = cong suc (lem-even⇒⌊≡⌋ em)
+
   open EvenOdd public
 
   lem-2x⌈n/2⌉ : ∀ {x} → 2 * ⌈ x /2⌉ ≤ suc x
