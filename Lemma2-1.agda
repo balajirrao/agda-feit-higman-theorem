@@ -19,6 +19,8 @@ open import Function.Equality as FunEq
 
 open import Function.Inverse hiding (sym)
 
+open import Function.Related.TypeIsomorphisms
+
 open import Data.Fin using (Fin)
 open import Misc
 open SemiringSolver
@@ -95,24 +97,24 @@ module Lemma2-1 where
     lem₅ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (Subset.elem e₁)) f ≡ (pred (n))
     lem₅ {e} {e₁} {f} eq = ≤-≥⇒≡ (pred-mono (lem₃ {e} {e₁} eq)) (≰⇒> (λ x → lem₄ {e} {e₁} eq (s≤s x)))
 
-    F : (e : P) (f : X) → Subset (chain (pt e) f) (λ c → len c ≡ n) → L# e
+    F : (e : P) (f : X) → Σ (chain (pt e) f) (λ c → len c ≡ n) → L# e
     F _ ._ ([ ._ ] , ())
     F _ _ (_∷_ ._  {{e<>f}} {{e#f}} c , len≡n) with head c
     F e f₁ (_∷_ .(pt e) {{e<>f}} {{e#f}} c , len≡n) | pt x = ⊥-elim (IP-pt e<>f e#f)
     F e f₁ (_∷_ .(pt e) {{e<>f}} {{e#f}} c , len≡n) | ln x = x , e#f
 
-    F⁻¹ : (e : P) (f : X) → lambda (pt e) f ≡ n →  L# e → Subset (chain (pt e) f) (λ c → len c ≡ n) 
+    F⁻¹ : (e : P) (f : X) → lambda (pt e) f ≡ n →  L# e → Σ (chain (pt e) f) (λ c → len c ≡ n) 
     F⁻¹ e f λ≡n (l , #)  = _∷_ (pt e) {{fromWitnessFalse (λ ())}} (sc (ln l) f) , PropEq.cong suc (lem₅ λ≡n)
 
-    lem-id : (e : P) (f : X) → (λ≡n : lambda (pt e) f ≡ n) → (x : Subset (chain (pt e) f) (λ c → len c ≡ n)) → (F⁻¹ e f λ≡n (F e f x)) ≡ x
+    lem-id : (e : P) (f : X) → (λ≡n : lambda (pt e) f ≡ n) → (x : Σ (chain (pt e) f) (λ c → len c ≡ n)) → (F⁻¹ e f λ≡n (F e f x)) ≡ x
     lem-id e .(pt e) λ≡n ([ .(pt e) ] , ())
     lem-id e f λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} c , proof) with (head c)
     lem-id e f₁ λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} c , proof) | pt x = ⊥-elim (IP-pt e<>f e#f)
     lem-id e f λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} c , proof) | ln x with PropEq.cong (Subset.elem) (A₂ ((sc (ln x) f) , ≡⇒≤ (PropEq.cong suc (lem₅ {e} {x , (e#f)} λ≡n)) , shortest-irred _ refl) (c , (≡⇒≤ proof) , shortest-irred c (tail-shortest {c = (pt e) ∷ c} (trans proof (sym λ≡n)))))
-    lem-id e f₁ λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} .(sc (ln x) f₁) , proof) | ln x | refl = refl
+    lem-id e f₁ λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} .(sc (ln x) f₁) , proof) | ln x | refl = Inverse.to Σ-≡,≡↔≡ ⟨$⟩ (refl , (proof-irrelevance _ proof))
 
-    I : (e : P) (e₁ : L# e) (f : X) → lambda (pt e) f ≡ n → Inverse (PropEq.setoid (Subset (chain (pt e) f) (λ c → len c ≡ n))) (PropEq.setoid (L# e))
-    I e e₁ f λ≡n = record { to = record { _⟨$⟩_ = F e f; cong = PropEq.cong (F e f) };
+    I : (e : P) (f : X) → lambda (pt e) f ≡ n → Inverse (PropEq.setoid (Σ (chain (pt e) f) (λ c → len c ≡ n))) (PropEq.setoid (L# e))
+    I e f λ≡n = record { to = record { _⟨$⟩_ = F e f; cong = PropEq.cong (F e f) };
                      from = record { _⟨$⟩_ = F⁻¹ e f λ≡n ; cong = PropEq.cong (F⁻¹ e f λ≡n) } ;
                      inverse-of = record {
                                   left-inverse-of = lem-id e f λ≡n;
@@ -147,24 +149,24 @@ module Lemma2-1 where
     lem₅ : {e : L} {e₁ : P# e} {f : X} → lambda (ln e) f ≡ n → lambda (pt (Subset.elem e₁)) f ≡ (pred (n))
     lem₅ {e} {e₁} {f} eq = ≤-≥⇒≡ (pred-mono (lem₃ {e} {e₁} eq)) (≰⇒> (λ x → lem₄ {e} {e₁} eq (s≤s x)))
 
-    F : (e : L) (f : X) → Subset (chain (ln e) f) (λ c → len c ≡ n) → P# e
+    F : (e : L) (f : X) → Σ (chain (ln e) f) (λ c → len c ≡ n) → P# e
     F _ ._ ([ ._ ] , ())
     F _ _ (_∷_ ._  {{e<>f}} {{e#f}} c , len≡n) with head c
     F e f₁ (_∷_ .(pt e) {{e<>f}} {{e#f}} c , len≡n) | ln x = ⊥-elim (IP-ln e<>f e#f)
     F e f₁ (_∷_ .(pt e) {{e<>f}} {{e#f}} c , len≡n) | pt x = x , e#f
 
-    F⁻¹ : (e : L) (f : X) → lambda (ln e) f ≡ n →  P# e → Subset (chain (ln e) f) (λ c → len c ≡ n) 
+    F⁻¹ : (e : L) (f : X) → lambda (ln e) f ≡ n →  P# e → Σ (chain (ln e) f) (λ c → len c ≡ n) 
     F⁻¹ e f λ≡n (l , #)  = _∷_ (ln e) {{fromWitnessFalse (λ ())}} (sc (pt l) f) , PropEq.cong suc (lem₅ λ≡n)
 
-    lem-id : (e : L) (f : X) → (λ≡n : lambda (ln e) f ≡ n) → (x : Subset (chain (ln e) f) (λ c → len c ≡ n)) → (F⁻¹ e f λ≡n (F e f x)) ≡ x
+    lem-id : (e : L) (f : X) → (λ≡n : lambda (ln e) f ≡ n) → (x : Σ (chain (ln e) f) (λ c → len c ≡ n)) → (F⁻¹ e f λ≡n (F e f x)) ≡ x
     lem-id e .(ln e) λ≡n ([ .(ln e) ] , ())
     lem-id e f λ≡n (_∷_ .(ln e) {{e<>f}} {{e#f}} c , proof) with (head c)
     lem-id e f₁ λ≡n (_∷_ .(ln e) {{e<>f}} {{e#f}} c , proof) | ln x = ⊥-elim (IP-ln e<>f e#f)
     lem-id e f₁ λ≡n (_∷_ .(ln e) {{e<>f}} {{e#f}} c , proof) | pt x with PropEq.cong (Subset.elem) (A₂ ((sc (pt x) f₁) , ≡⇒≤ (PropEq.cong suc (lem₅ {e} {x , (e#f)} λ≡n)) , shortest-irred _ refl) (c , (≡⇒≤ proof) , shortest-irred c  (tail-shortest {c = ln e ∷ c} (trans proof (sym λ≡n)))))
-    lem-id e f₁ λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} .(sc (pt x) f₁) , proof) | pt x | refl = refl
+    lem-id e f₁ λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} .(sc (pt x) f₁) , proof) | pt x | refl = Inverse.to Σ-≡,≡↔≡ ⟨$⟩ (refl , (proof-irrelevance _ proof))
 
-    J : (e : L) (e₁ : P# e) (f : X) → lambda (ln e) f ≡ n → Inverse (PropEq.setoid (Subset (chain (ln e) f) (λ c → len c ≡ n))) (PropEq.setoid (P# e))
-    J e e₁ f λ≡n = record { to = record { _⟨$⟩_ = F e f; cong = PropEq.cong (F e f) };
+    J : (e : L) (f : X) → lambda (ln e) f ≡ n → Inverse (PropEq.setoid (Σ (chain (ln e) f) (λ c → len c ≡ n))) (PropEq.setoid (P# e))
+    J e f λ≡n = record { to = record { _⟨$⟩_ = F e f; cong = PropEq.cong (F e f) };
                      from = record { _⟨$⟩_ = F⁻¹ e f λ≡n ; cong = PropEq.cong (F⁻¹ e f λ≡n) } ;
                      inverse-of = record {
                                   left-inverse-of = lem-id e f λ≡n;
