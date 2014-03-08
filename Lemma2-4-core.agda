@@ -136,6 +136,18 @@ module Lemma2-4-core where
   ppneck [ e ] {()}
   ppneck (_∶⟨_⟩∶_  {e₂} e e₁ ppc {{e#e₁}} {{e₁#e₂}}) =  (e₁ , e#e₁) , (e₂ , e₁#e₂)
   
+  -- ppneck that can be used with cong. Having an argument ≥1
+  -- that depends on the chain ppc makes it not possible to use with cong
+  ppneck-gen : ∀ {e f} (ppc : ppchain e f) → {≥1 : True (1 ≤? ρ e f)} → Neck e
+  ppneck-gen {e} {f} ppc {≥1} = ppneck ppc
+                                {fromWitness
+                                  (begin
+                                    1 ≤⟨ toWitness ≥1 ⟩
+                                    ρ e f
+                                      ≤⟨ sppc-ρ-shorter-than ppc ⟩
+                                    (ρ' ppc ∎))}
+             where open Data.Nat.≤-Reasoning
+
   tailpp : ∀ {e f} → (ppc : ppchain e f) → {≥1 : True (1 ≤? ρ' ppc)} → ppchain (neck-e₂ (ppneck ppc)) f
   tailpp {.f} {f} [ .f ] {()}
   tailpp (_∶⟨_⟩∶_ _ _ ppc) = ppc
