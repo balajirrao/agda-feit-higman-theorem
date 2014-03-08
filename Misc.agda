@@ -117,3 +117,7 @@ module Misc where
   <1⇒≡0  : ∀ {m} → 1 > m → m ≡ 0
   <1⇒≡0 {zero} x = refl
   <1⇒≡0 {suc m} (s≤s ())
+
+  ¬<-≡ : ∀ {x y} → x < y → x ≡ y  → ⊥
+  ¬<-≡ {zero} () refl
+  ¬<-≡ {suc x} q refl = ¬<-≡ (pred-mono q) refl
