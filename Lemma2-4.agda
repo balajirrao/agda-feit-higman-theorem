@@ -11,15 +11,15 @@ open import Data.Unit hiding (_≤?_; _≤_; _≟_)
 
 open import Data.Product 
 
-open import Data.Nat hiding (_≟_)
-open Data.Nat.≤-Reasoning
+open import Data.Nat renaming (_≟_ to _ℕ≟_)
+--open Data.Nat.≤-Reasoning
 
 open import Data.Nat.Properties
 open SemiringSolver
 
 open import Function hiding (_∘_)
 open import Function.Equality hiding (cong;  _∘_)
-open import Function.Inverse
+open import Function.Inverse hiding (sym)
 open import Function.LeftInverse hiding (_∘_)
 
 open import Misc
@@ -356,3 +356,118 @@ module Lemma2-4 where
 
                       z = A₂-ρ (ppc , (<n/2 , ppc-irred )) (sppc e f , (toWitness <n , sppc-irred))
     
+
+  module ρ≡n/2 {e f : P} {n-even : Even (n)} {≡n/2 : True ( ⌈ (n) /2⌉ ℕ≟ ρ e f)} where
+
+    open import Lemma2-1
+
+    private
+      λ≡n : lambda (pt e) (pt f) ≡ n
+      λ≡n = PropEq.sym (
+            begin
+              n
+                ≡⟨ PropEq.sym (lem-2x⌈n/2⌉-even n-even) ⟩
+              2 * ⌈ n /2⌉ 
+                ≡⟨ cong (_*_ 2) (toWitness ≡n/2) ⟩
+              2 * ρ e f
+                ≡⟨ PropEq.sym lem-2xρ-lambda ⟩
+              (lambda (pt e) (pt f) ∎))
+        where open ≡-Reasoning
+
+      chain-with-neck : (nck : Neck e) → chain (pt e) (pt f)
+      chain-with-neck nck = proj₁ $ Inverse.from (I e (pt f) λ≡n) ⟨$⟩ l#e
+        where l#e : L# e
+              l#e = (neck-e₁ nck) , neck-e#e₁ nck
+
+      len-cwc≡n : (nck : Neck e) → len (chain-with-neck nck) ≡ n
+      len-cwc≡n nck = proj₂ $ Inverse.from (I e (pt f) λ≡n) ⟨$⟩ l#e
+        where l#e : L# e
+              l#e = (neck-e₁ nck) , neck-e#e₁ nck
+
+      ppc-with-neck : (nck : Neck e) → ppchain e f
+      ppc-with-neck nck = chain-with-neck nck as-ppc
+
+      ρef≥1 : ρ e f ≥ 1
+      ρef≥1 = begin 1 ≤⟨ s≤s z≤n ⟩ ⌈ n /2⌉ ≡⟨ toWitness ≡n/2 ⟩ (ρ e f ∎)
+        where open Data.Nat.≤-Reasoning
+
+      ρ'ppc≡n : (nck : Neck e) → ρ' (ppc-with-neck nck) ≡ ⌈ (n) /2⌉
+      ρ'ppc≡n nck rewrite PropEq.sym (lem-lambda/2-ρ {e} {f}) |
+                          PropEq.sym (lem-len/2-ρ {ppc = ppc-with-neck nck}) |
+                          lem-id₀ {c = sc (pt e) (pt f)} |
+                          lem-id₀ {c = chain-with-neck nck} =
+                            trans (cong ⌊_/2⌋ lenc≡n) (lem-even⇒⌊≡⌋ n-even)
+        where l#e : L# e
+              l#e = (neck-e₁ nck) , neck-e#e₁ nck
+              lenc≡n = proj₂ $ Inverse.from (I e (pt f) λ≡n) ⟨$⟩ l#e
+      
+      ρ'ppc≥1 : (nck : Neck e) → ρ' (ppc-with-neck nck) ≥ 1
+      ρ'ppc≥1 nck = begin 1 ≤⟨ s≤s z≤n ⟩ ⌈ (n) /2⌉ ≡⟨ PropEq.sym (ρ'ppc≡n nck) ⟩ (ρ' (ppc-with-neck nck) ∎)
+        where open Data.Nat.≤-Reasoning
+
+      ppc-shortest : (nck : Neck e) → (ppc-with-neck nck) is-ρ-shortest
+      ppc-shortest nck = trans (ρ'ppc≡n nck) (toWitness ≡n/2)
+
+      e₂⋆ : (nck : Neck e) → P
+      e₂⋆ nck = (neck-e₂ $ ppneck (ppc-with-neck nck) {fromWitness (ρ'ppc≥1 nck)})
+    
+    class-A₀-ρ : (nck : Neck e) → (neck-e₂ nck) ≡ (e₂⋆ nck) → ρ (neck-e₂ nck) f ≡ pred ⌈ (n) /2⌉
+    class-A₀-ρ nck eq = begin
+                       ρ e₂ f
+                         ≡⟨ cong ((Function.flip ρ) f) eq ⟩
+                       ρ (e₂⋆ nck) f
+                         ≡⟨ PropEq.sym (tailpp-ρ-shortest (ppc-shortest nck)) ⟩
+                       ρ' (tailpp (ppc-with-neck nck))
+                         ≡⟨ lem-tailpp-ρ {ppc = ppc-with-neck nck} ⟩
+                       pred (ρ' (ppc-with-neck nck))
+                         ≡⟨ cong pred (ρ'ppc≡n nck) ⟩
+                       (pred ⌈ n /2⌉ ∎)                                                                                
+      where open ≡-Reasoning
+            e₂ = neck-e₂ nck
+
+    class-A₁-ρ :  (nck : Neck e) → (neck-e₂ nck) ≢ (e₂⋆ nck) → ρ (neck-e₂ nck) f ≡ ⌈ (n) /2⌉
+    class-A₁-ρ nck neq = ≤-≥⇒≡ (begin _ ≤⟨ A₁'-ρ ⟩ ⌊ n /2⌋ ≡⟨ lem-even⇒⌊≡⌋ n-even ⟩ (⌈ n /2⌉ ∎)) (≰⇒> (λ x → ¬is< (s≤s x)))
+      where open Data.Nat.≤-Reasoning
+            e₁ = neck-e₁ nck
+            e₂ = neck-e₂ nck
+            
+            ppc : ppchain e f
+            ppc = ((e ∶⟨ e₁ ⟩∶ (sppc e₂ f)) {{neck-e#e₁ nck}} {{neck-e₁#e₂ nck}})
+  
+            ¬is< : suc (ρ (neck-e₂ nck) f) ≤ ⌈ (n) /2⌉ → ⊥
+            ¬is< is< with suc (suc (ρ e₂ f)) ≤? ⌈ (n) /2⌉
+
+            ¬is< is< | yes p = ¬<-≡ ρef<n/2 (sym (toWitness ≡n/2))
+              where ρef<n/2 : ρ e f <  ⌈ (n) /2⌉
+                    ρef<n/2 = begin
+                              suc (ρ e f)
+                                ≤⟨ s≤s (sppc-ρ-shorter-than ppc) ⟩
+                                suc (suc (ρ e₂ f))
+                                ≤⟨ p ⟩ (⌈ n /2⌉ ∎)
+ 
+            ¬is< is< | no ¬p = neq e₂≡e₂⋆
+              where ρ'ppc≡n/2 : ρ' ppc ≡ ⌈ (n) /2⌉ 
+                    ρ'ppc≡n/2 = ≤-≥⇒≡ is< (≰⇒> (λ x → ¬p (s≤s x)))
+      
+                    len-ppc-as-c≡n : len (ppc as-c) ≡ n
+                    len-ppc-as-c≡n rewrite
+                                   lem-id₀ {c = sc (pt e₂) (pt f)} |
+                                   (lem-2xρ-lambda {e₂} {f}) |
+                                   sym (lem-2x⌈n/2⌉-even n-even) =
+                                       trans (solve 1
+                                         (λ x → con 2 :+ x :+ (x :+ con 0) :=
+                                           con 1 :+ x :+ (con 1 :+ x :+ con 0))
+                                               refl (ρ e₂ f)) (cong (_*_ 2) ρ'ppc≡n/2)
+
+                    c≡ : ppc as-c ≡ chain-with-neck nck
+                    c≡ = cong proj₁ (sym
+                                         (Inverse.left-inverse-of (I e (pt f) λ≡n)
+                                          (ppc as-c , len-ppc-as-c≡n)))
+                    
+                    ppc≡ : ppc ≡ ppc-with-neck nck
+                    ppc≡ = trans (sym lem-id₁) (cong _as-ppc c≡)
+      
+                    e₂≡e₂⋆ : e₂ ≡ (e₂⋆ nck)
+                    e₂≡e₂⋆ = cong neck-e₂ (cong (λ x → ppneck-gen x {fromWitness ρef≥1}) ppc≡)
+                    
+       
