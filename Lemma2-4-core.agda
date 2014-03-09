@@ -217,3 +217,15 @@ module Lemma2-4-core where
   ρ≡0⇒e≡f {e} {f} eq with sppc e f
   ρ≡0⇒e≡f eq | [ e ] = refl
   ρ≡0⇒e≡f () | _∶⟨_⟩∶_ e e₁ c {{e#e₁}} {{e₁#e₂}}
+
+  ρee≡0 : ∀ {e} → ρ e e ≡ 0
+  ρee≡0 {e} = helper (sppc-ρ-shorter-than [ e ])
+    where helper : ∀ {x} → x ≤ 0 → x ≡ 0
+          helper z≤n = refl
+  
+  pt-inj : ∀ {x y} → pt x ≡ pt y → x ≡ y
+  pt-inj refl = refl
+
+
+  ln-inj : ∀ {x y} → ln x ≡ ln y → x ≡ y
+  ln-inj refl = refl
