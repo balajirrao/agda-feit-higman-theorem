@@ -30,8 +30,7 @@ import Data.Fin.Properties as Fin
 
 module Lemma2-4 where
   open import Lemma2-4-core public
- 
-  
+   
   neck⋆ : ∀ (e f : P) → {≥1 : True (1 ≤? ρ e f)} → Neck e
   neck⋆ e f = ppneck (sppc e f)
 
@@ -138,12 +137,11 @@ module Lemma2-4 where
   T#sym x = fromWitness (#sym (toWitness x))
  
   module 0<ρ<n/2 {e f : P} {≥1 : True (1 ≤? ρ e f)} {<n : True (suc (ρ e f) ≤? ⌈ n /2⌉)} where
-    -- e₂ ≡ e₂⋆
-    class-A-ρ : (nck : Neck e) → nck ≡ neck⋆ e f {≥1} → ρ (neck-e₂ nck) f ≡ pred (ρ e f)
-    class-A-ρ ._ refl = trans
+  -- e₂ ≡ e₂⋆
+    class-A-ρ : (nck : Neck e) →  (neck-e₂ nck) ≡ (neck-e₂ (neck⋆ e f {≥1})) → ρ (neck-e₂ nck) f ≡ pred (ρ e f)
+    class-A-ρ (proj₁ , ._ , proof) refl = trans
                                       (PropEq.sym (tailpp-ρ-shortest {ppc = sppc e f} refl))
                                       (lem-tailpp-ρ {ppc = sppc e f})
-
     -- e₂ ≢ e₂⋆ , e₂ ≢ e , e₁ ≡ e₁⋆
     class-B-ρ : (nck : Neck e) → (proj₁ nck) ≡ proj₁ (neck⋆ e f {≥1}) →
                            (neck-e₂ nck) ≢ (neck-e₂ (neck⋆ e f {≥1})) →
@@ -201,13 +199,6 @@ module Lemma2-4 where
 
             is≤ : ρ e₂ f ≤ 1 + ρ e f
             is≤ = sppc-ρ-shorter-than (e₂ ∶⟨ e₁ ⟩∶ sppc e f)
-
-            pt-inj : ∀ {x y} → pt x ≡ pt y → x ≡ y
-            pt-inj refl = refl
-  
-
-            ln-inj : ∀ {x y} → ln x ≡ ln y → x ≡ y
-            ln-inj refl = refl
 
             e₁≢e₁⋆ : ∀ {x y} {ρxy≥1 : True (1 ≤? ρ x y)} → (neck≢ : e₁ ≢ neck-e₁ (neck⋆ x y)) → (ln e₁) ≢ ln (neck-e₁ (neck⋆ x y))
             e₁≢e₁⋆ neck≢ = λ x → neck≢ (ln-inj x)
