@@ -157,14 +157,14 @@ module IncidenceGeometry where
   irred {.f} {f} [ .f ] = ⊤
   irred {e} {f} (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) = ⊤
   irred (e ∷ f ∷ c) = {n : _} {≤len : True (n ≤? len c)} →
-                               reducible (_th-segment-of_ n (e ∷ f ∷ c) ) → ⊥
+                               reducible (_th-segment-of_ n (e ∷ f ∷ c) {≤len = ≤len} ) → ⊥
 
 
   irred-∷ : ∀ {y z} (x : X) (c : chain y z) → {≥2 : True (2 ≤? len c)} →
                       .{x<>y : False (x ≟ y)} → .{x#y : True (x #? y)} →
                       (¬x#z : x # (neck c) → ⊥) → irred c → irred (x ∷ c)
-  irred-∷ _ [ e₃ ] {≥2 = ()} 
-  irred-∷ _ (_∷_ e₃ [ ._ ]) {≥2 = ()}
+  irred-∷ _ [ e₃ ] {≥2 = ()} _ _
+  irred-∷ _ (_∷_ e₃ [ ._ ]) {≥2 = ()} _ _
   irred-∷ x (e₃ ∷ z ∷ c) ¬x#z ic = λ {m} {≤len} x₁ → helper {m} {≤len} x₁
     where helper : {k : ℕ} → {≤len : True (k ≤? (suc (len c)))} →
                  reducible (_th-segment-of_ k (x ∷ e₃ ∷ z ∷ c) {_} {≤len}) → ⊥

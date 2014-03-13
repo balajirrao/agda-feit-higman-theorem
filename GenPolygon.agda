@@ -22,11 +22,11 @@ module GenPolygon where
   open import IncidenceGeometry public
 
   postulate
-    _n : ℕ
+    nn : ℕ
 
   -- Define n so that n > 2
   n : ℕ
-  n = suc (suc (suc _n))
+  n = suc (suc (suc nn))
 
   n>2 : n > 2
   n>2 = s≤s (s≤s (s≤s z≤n))
@@ -40,7 +40,7 @@ module GenPolygon where
   -- A₂ : There exists at most one irreducible chain of length less than n from e to f
   postulate
     A₁ : (e f : X) → ∃ (λ (c : chain e f) → len c ≤ n)
-    A₂ : ∀ {e f} (c c' : Subset (chain e f) (λ z → len z < n × irred z)) → c ≡ c'
+    A₂ : ∀ {e f} (c c' : Σ' (chain e f) (λ z → len z < n × irred z)) → c ≡ c'
  
   -- From the A₁ postulate it follows that -- TODO : prove it ?
   postulate
@@ -66,14 +66,18 @@ module GenPolygon where
 
   -- Set of all lines incident with a given point.
   L# : (p : P) → Set
-  L# p = Subset L (λ l → True (pt p #? ln l))
+  L# p = Σ' L (λ l → True (pt p #? ln l))
    
   P# : (l : L) → Set
-  P# l = Subset P (λ p → True (ln l #? pt p))
+  P# l = Σ' P (λ p → True (ln l #? pt p))
 
   -- Axioms for Generalized Polygon
   postulate
-    s t : ℕ
+    ss t : ℕ
+
+  s = (suc ss)
+
+  postulate
     GP-P : (l : L) → Inverse (setoid (P# l)) (setoid (Fin (1 + s)))
     GP-L : (p : P) → Inverse (setoid (L# p)) (setoid (Fin (1 + t)))
 

@@ -112,19 +112,19 @@ module Lemma2-4-core where
   sppc-is-ρ-shortest = refl
  
   Neck : P → Set
-  Neck e = Σ (L# e) (P# Function.∘ Subset.elem)
+  Neck e = Σ (L# e) (λ x → P# (el x))
 
   neck-e₂ : ∀ {e} → Neck e → P
-  neck-e₂ nck = Subset.elem (proj₂ nck)
+  neck-e₂ nck = el (proj₂ nck)
   
   neck-e₁ : ∀ {e} → Neck e → L
-  neck-e₁ nck = Subset.elem (proj₁ nck) 
+  neck-e₁ nck = el (proj₁ nck) 
 
   .neck-e#e₁ : ∀ {e} → (nck : Neck e) → True ((pt e) #? (ln (neck-e₁ nck)))
-  neck-e#e₁ nck =  Subset.proof (proj₁ nck)
+  neck-e#e₁ nck =  pf (proj₁ nck)
 
   .neck-e₁#e₂ : ∀ {e} → (nck : Neck e) → True ((ln (neck-e₁ nck)) #? (pt (neck-e₂ nck)))
-  neck-e₁#e₂ nck =  Subset.proof (proj₂ nck)
+  neck-e₁#e₂ nck =  pf (proj₂ nck)
        
   lem-ρ'≥ρ : ∀ {e f} {ppc : ppchain e f} →  True (1 ≤? ρ e f) → True (1 ≤? ρ' ppc)
   lem-ρ'≥ρ {e} {f} {ppc} ≥1 = fromWitness
@@ -134,8 +134,8 @@ module Lemma2-4-core where
 
   ppneck : ∀ {e f} (ppc : ppchain e f) → {≥1 : True (1 ≤? ρ' ppc)} → Neck e
   ppneck [ e ] {()}
-  ppneck (_∶⟨_⟩∶_  {e₂} e e₁ ppc {{e#e₁}} {{e₁#e₂}}) =  (e₁ , e#e₁) , (e₂ , e₁#e₂)
-  
+  ppneck (_∶⟨_⟩∶_  {e₂} e e₁ ppc {{e#e₁}} {{e₁#e₂}}) =  (e₁ ∶ e#e₁) , (e₂ ∶ e₁#e₂)
+
   -- ppneck that can be used with cong. Having an argument ≥1
   -- that depends on the chain ppc makes it not possible to use with cong
   ppneck-gen : ∀ {e f} (ppc : ppchain e f) → {≥1 : True (1 ≤? ρ e f)} → Neck e
@@ -148,24 +148,24 @@ module Lemma2-4-core where
                                     (ρ' ppc ∎))}
              where open Data.Nat.≤-Reasoning
 
-  tailpp : ∀ {e f} → (ppc : ppchain e f) → {≥1 : True (1 ≤? ρ' ppc)} → ppchain (neck-e₂ (ppneck ppc)) f
+  tailpp : ∀ {e f} → (ppc : ppchain e f) → {≥1 : True (1 ≤? ρ' ppc)} → ppchain (neck-e₂ (ppneck  ppc {≥1 = ≥1} )) f
   tailpp {.f} {f} [ .f ] {()}
   tailpp (_∶⟨_⟩∶_ _ _ ppc) = ppc
 
-  lem-tailpp-ρ : ∀ {e f} {ppc : ppchain e f} {≥1 : True (1 ≤? ρ' ppc)} → ρ' (tailpp ppc) ≡ pred (ρ' ppc)
+  lem-tailpp-ρ : ∀ {e f} {ppc : ppchain e f} {≥1 : True (1 ≤? ρ' ppc)} → ρ' (tailpp ppc  {≥1 = ≥1}) ≡ pred (ρ' ppc)
   lem-tailpp-ρ {.f} {f} {[ .f ]} {()}
   lem-tailpp-ρ {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} = refl
 
 
   module ρ-shortest  where
-    lem-neckp : {e f : P} {ppc : ppchain e f} {≥1 : True (1 ≤? ρ' ppc)} → pt (neck-e₂ (ppneck ppc)) ≡ 
+    lem-neckp : {e f : P} {ppc : ppchain e f} {≥1 : True (1 ≤? ρ' ppc)} → pt (neck-e₂ (ppneck ppc  {≥1 = ≥1})) ≡ 
                   neck (tail (ppc as-c))
                       
     lem-neckp {.f} {f} {[ .f ]} {()}
     lem-neckp {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} = refl
 
     lem-tailpp : ∀ {e f} {ppc : ppchain e f} {≥1 : True (1 ≤? ρ' ppc)} →
-                         len ((tailpp ppc) as-c) ≡ len (tail (tail (ppc as-c)))
+                         len ((tailpp ppc  {≥1 = ≥1}) as-c) ≡ len (tail (tail (ppc as-c)))
     lem-tailpp {.f} {f} {[ .f ]} {()}
     lem-tailpp {e} {f} {_∶⟨_⟩∶_ .e e₁ ppc {{e#e₁}} {{e₁#e₂}}} = refl
 

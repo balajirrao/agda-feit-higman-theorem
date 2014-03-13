@@ -12,7 +12,7 @@ open import Data.Nat hiding (_≟_; compare) renaming ( _+_ to _N+_; _∸_ to _N
            ; _≤_ to _N≤_; _≥_ to _N≥_; _<_ to _N<_; _≤?_ to _N≤?_; pred to Npred)
 open Data.Nat.≤-Reasoning
 open import Data.Fin
-open import Data.Fin.Properties renaming (setoid to finSetoid)
+open import Data.Fin.Props renaming (setoid to finSetoid)
 open import Function.Equality
 open import Function.Inverse
 open import Data.Sum
@@ -32,6 +32,8 @@ module FinBijections where
     bij-such-that : {X : Set} → (x y : X) → Inverse (PropEq.setoid X) (PropEq.setoid X)
     lem-bij-such-that : ∀ {X} → (x y : X) →
                          Inverse.to (bij-such-that x y) ⟨$⟩ x ≡ y 
+
+    fin-exclude : ∀ {a} → ( x : Fin (suc a)) → Inverse (PropEq.setoid (Σ' (Fin (suc a)) (λ x₁ → x₁ ≢ x))) (finSetoid a)
 
  -- rotl : ∀ {a} → Fin (suc a) → Fin (suc a)
 

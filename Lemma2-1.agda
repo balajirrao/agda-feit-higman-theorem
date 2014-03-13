@@ -70,47 +70,47 @@ module Lemma2-1 where
   lem-ll {x₁} {y} {_∷_ .(ln x₁) {{e<>f}} {{e#f}} c} | ln x = ⊥-elim (IP-ln e<>f e#f)
 
   module Lemma2-1-pt where
-    lem₀ : {e : P} {e₁ : L# e} {f : X}  → Even (lambda (pt e) f) → Odd (lambda (ln (Subset.elem e₁)) f)
-    lem₀ {e₁ = l , #} {pt x} x₁ = lem-lp
-    lem₀ {e} {e₁ = l , #} {ln x} x₁ = ⊥-elim (oddEvenEither x₁ lem-pl)
+    lem₀ : {e : P} {e₁ : L# e} {f : X}  → Even (lambda (pt e) f) → Odd (lambda (ln (el e₁)) f)
+    lem₀ {e₁ = l ∶ #} {pt x} x₁ = lem-lp
+    lem₀ {e} {e₁ = l ∶ #} {ln x} x₁ = ⊥-elim (oddEvenEither x₁ lem-pl)
 
-    lem₁ : {e : P} {e₁ : L# e} {f : X}  → Odd (lambda (pt e) f) → Even (lambda (ln (Subset.elem e₁)) f)
-    lem₁ {e₁ = l , #} {pt x} x₁ = ⊥-elim (oddEvenEither lem-pp x₁)
-    lem₁ {e₁ = l , #} {ln x} x₁ = lem-ll
+    lem₁ : {e : P} {e₁ : L# e} {f : X}  → Odd (lambda (pt e) f) → Even (lambda (ln (el e₁)) f)
+    lem₁ {e₁ = l ∶ #} {pt x} x₁ = ⊥-elim (oddEvenEither lem-pp x₁)
+    lem₁ {e₁ = l ∶ #} {ln x} x₁ = lem-ll
 
-    lem₂ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (Subset.elem e₁)) f ≡ n → ⊥
+    lem₂ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (el e₁)) f ≡ n → ⊥
     lem₂ {e} {e₁} {f} λ≡n eq with parity (lambda (pt e) f)
     ... | isEven p = oddEvenEither (subst Even (trans λ≡n (sym eq)) p) (lem₀ {e} {e₁} p)
     ... | isOdd p = oddEvenEither (lem₁ {e} {e₁} p)  (subst Odd (trans λ≡n (sym eq)) p)
 
-    lem₃ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (Subset.elem e₁)) f < n
-    lem₃ {e} {e₁} {f} λ≡n = ≤-≢⇒< (A₁' {ln (Subset.elem e₁)} {f}) (lem₂ {e} {e₁} λ≡n)
+    lem₃ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (el e₁)) f < n
+    lem₃ {e} {e₁} {f} λ≡n = ≤-≢⇒< (A₁' {ln (el e₁)} {f}) (lem₂ {e} {e₁} λ≡n)
 
-    lem₄ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (Subset.elem e₁)) f < (pred (n)) → ⊥
-    lem₄ {e} {e₁} {f} λ≡n p with sc-is-shorter-than (_∷_ (pt e) {{fromWitnessFalse (λ ())}} {{(Subset.proof e₁)}} (sc (ln (Subset.elem e₁)) f))
-    ... | z with _n | begin n ≡⟨ sym λ≡n ⟩ lambda (pt e) f ≤⟨ z ⟩ _ ≤⟨ p ⟩ ( pred (n)) ∎
+    lem₄ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (el e₁)) f < (pred (n)) → ⊥
+    lem₄ {e} {e₁} {f} λ≡n p with sc-is-shorter-than (_∷_ (pt e) {{fromWitnessFalse (λ ())}} {{(pf e₁)}} (sc (ln (el e₁)) f))
+    ... | z with nn | begin n ≡⟨ sym λ≡n ⟩ lambda (pt e) f ≤⟨ z ⟩ _ ≤⟨ p ⟩ ( pred (n)) ∎
     ... | y | k = helper k
         where open Data.Nat.≤-Reasoning
               helper : ∀ {k} → suc k ≤ k → ⊥
-              helper (s≤s t) = helper t
+              helper (s≤s t) = helper (t)
 
-    lem₅ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (Subset.elem e₁)) f ≡ (pred (n))
+    lem₅ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (el e₁)) f ≡ (pred (n))
     lem₅ {e} {e₁} {f} eq = ≤-≥⇒≡ (pred-mono (lem₃ {e} {e₁} eq)) (≰⇒> (λ x → lem₄ {e} {e₁} eq (s≤s x)))
 
     F : (e : P) (f : X) → Σ (chain (pt e) f) (λ c → len c ≡ n) → L# e
     F _ ._ ([ ._ ] , ())
     F _ _ (_∷_ ._  {{e<>f}} {{e#f}} c , len≡n) with head c
     F e f₁ (_∷_ .(pt e) {{e<>f}} {{e#f}} c , len≡n) | pt x = ⊥-elim (IP-pt e<>f e#f)
-    F e f₁ (_∷_ .(pt e) {{e<>f}} {{e#f}} c , len≡n) | ln x = x , e#f
+    F e f₁ (_∷_ .(pt e) {{e<>f}} {{e#f}} c , len≡n) | ln x = x ∶ e#f
 
     F⁻¹ : (e : P) (f : X) → lambda (pt e) f ≡ n →  L# e → Σ (chain (pt e) f) (λ c → len c ≡ n) 
-    F⁻¹ e f λ≡n (l , #)  = _∷_ (pt e) {{fromWitnessFalse (λ ())}} (sc (ln l) f) , PropEq.cong suc (lem₅ λ≡n)
+    F⁻¹ e f λ≡n (l ∶ #)  = _∷_ (pt e) {{fromWitnessFalse (λ ())}} (sc (ln l) f) , PropEq.cong suc (lem₅ {e₁ = l ∶ #} λ≡n)
 
     lem-id : (e : P) (f : X) → (λ≡n : lambda (pt e) f ≡ n) → (x : Σ (chain (pt e) f) (λ c → len c ≡ n)) → (F⁻¹ e f λ≡n (F e f x)) ≡ x
     lem-id e .(pt e) λ≡n ([ .(pt e) ] , ())
     lem-id e f λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} c , proof) with (head c)
     lem-id e f₁ λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} c , proof) | pt x = ⊥-elim (IP-pt e<>f e#f)
-    lem-id e f λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} c , proof) | ln x with PropEq.cong (Subset.elem) (A₂ ((sc (ln x) f) , ≡⇒≤ (PropEq.cong suc (lem₅ {e} {x , (e#f)} λ≡n)) , shortest-irred _ refl) (c , (≡⇒≤ proof) , shortest-irred c (tail-shortest {c = (pt e) ∷ c} (trans proof (sym λ≡n)))))
+    lem-id e f λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} c , proof) | ln x with PropEq.cong (el) (A₂ ((sc (ln x) f) ∶ (≡⇒≤ (PropEq.cong suc (lem₅ {e} {x ∶ (e#f)} λ≡n)) , shortest-irred _ refl)) (c ∶ ((≡⇒≤ proof) , shortest-irred c (tail-shortest {c = (pt e) ∷ c} (trans proof (sym λ≡n))))))
     lem-id e f₁ λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} .(sc (ln x) f₁) , proof) | ln x | refl = Inverse.to Σ-≡,≡↔≡ ⟨$⟩ (refl , (proof-irrelevance _ proof))
 
     I : (e : P) (f : X) → lambda (pt e) f ≡ n → Inverse (PropEq.setoid (Σ (chain (pt e) f) (λ c → len c ≡ n))) (PropEq.setoid (L# e))
@@ -122,47 +122,47 @@ module Lemma2-1 where
   open Lemma2-1-pt public using (I)
 
   module Lemma2-1-ln where
-    lem₀ : {e : L} {e₁ : P# e} {f : X}  → Even (lambda (ln e) f) → Odd (lambda (pt (Subset.elem e₁)) f)
-    lem₀ {e₁ = l , #} {ln x} x₁ = lem-pl
-    lem₀ {e} {e₁ = l , #} {pt x} x₁ = ⊥-elim (oddEvenEither x₁ lem-lp)
+    lem₀ : {e : L} {e₁ : P# e} {f : X}  → Even (lambda (ln e) f) → Odd (lambda (pt (el e₁)) f)
+    lem₀ {e₁ = l ∶ #} {ln x} x₁ = lem-pl
+    lem₀ {e} {e₁ = l ∶ #} {pt x} x₁ = ⊥-elim (oddEvenEither x₁ lem-lp)
 
-    lem₁ : {e : L} {e₁ : P# e} {f : X}  → Odd (lambda (ln e) f) → Even (lambda (pt (Subset.elem e₁)) f)
-    lem₁ {e₁ = l , #} {ln x} x₁ = ⊥-elim (oddEvenEither lem-ll x₁)
-    lem₁ {e₁ = l , #} {pt x} x₁ = lem-pp
+    lem₁ : {e : L} {e₁ : P# e} {f : X}  → Odd (lambda (ln e) f) → Even (lambda (pt (el e₁)) f)
+    lem₁ {e₁ = l ∶ #} {ln x} x₁ = ⊥-elim (oddEvenEither lem-ll x₁)
+    lem₁ {e₁ = l ∶ #} {pt x} x₁ = lem-pp
 
-    lem₂ : {e : L} {e₁ : P# e} {f : X} → lambda (ln e) f ≡ n → lambda (pt (Subset.elem e₁)) f ≡ n → ⊥
+    lem₂ : {e : L} {e₁ : P# e} {f : X} → lambda (ln e) f ≡ n → lambda (pt (el e₁)) f ≡ n → ⊥
     lem₂ {e} {e₁} {f} λ≡n eq with parity (lambda (ln e) f)
     ... | isEven p = oddEvenEither (subst Even (trans λ≡n (sym eq)) p) (lem₀ {e} {e₁} p)
     ... | isOdd p = oddEvenEither (lem₁ {e} {e₁} p)  (subst Odd (trans λ≡n (sym eq)) p)
 
-    lem₃ : {e : L} {e₁ : P# e} {f : X} → lambda (ln e) f ≡ n → lambda (pt (Subset.elem e₁)) f < n
-    lem₃ {e} {e₁} {f} λ≡n = ≤-≢⇒< (A₁' {pt (Subset.elem e₁)} {f}) (lem₂ {e} {e₁} λ≡n)
+    lem₃ : {e : L} {e₁ : P# e} {f : X} → lambda (ln e) f ≡ n → lambda (pt (el e₁)) f < n
+    lem₃ {e} {e₁} {f} λ≡n = ≤-≢⇒< (A₁' {pt (el e₁)} {f}) (lem₂ {e} {e₁} λ≡n)
 
-    lem₄ : {e : L} {e₁ : P# e} {f : X} → lambda (ln e) f ≡ n → lambda (pt (Subset.elem e₁)) f < (pred (n)) → ⊥
-    lem₄ {e} {e₁} {f} λ≡n p with sc-is-shorter-than (_∷_ (ln e) {{fromWitnessFalse (λ ())}} {{(Subset.proof e₁)}} (sc (pt (Subset.elem e₁)) f))
-    ... | z with _n | begin n ≡⟨ sym λ≡n ⟩ lambda (ln e) f ≤⟨ z ⟩ _ ≤⟨ p ⟩ ( pred (n)) ∎
+    lem₄ : {e : L} {e₁ : P# e} {f : X} → lambda (ln e) f ≡ n → lambda (pt (el e₁)) f < (pred (n)) → ⊥
+    lem₄ {e} {e₁} {f} λ≡n p with sc-is-shorter-than (_∷_ (ln e) {{fromWitnessFalse (λ ())}} {{(pf e₁)}} (sc (pt (el e₁)) f))
+    ... | z with nn | begin n ≡⟨ sym λ≡n ⟩ lambda (ln e) f ≤⟨ z ⟩ _ ≤⟨ p ⟩ ( pred (n)) ∎
     ... | y | k = helper k
         where open Data.Nat.≤-Reasoning
               helper : ∀ {k} → suc k ≤ k → ⊥
-              helper (s≤s t) = helper t
+              helper (s≤s t) = helper (t)
 
-    lem₅ : {e : L} {e₁ : P# e} {f : X} → lambda (ln e) f ≡ n → lambda (pt (Subset.elem e₁)) f ≡ (pred (n))
+    lem₅ : {e : L} {e₁ : P# e} {f : X} → lambda (ln e) f ≡ n → lambda (pt (el e₁)) f ≡ (pred (n))
     lem₅ {e} {e₁} {f} eq = ≤-≥⇒≡ (pred-mono (lem₃ {e} {e₁} eq)) (≰⇒> (λ x → lem₄ {e} {e₁} eq (s≤s x)))
 
     F : (e : L) (f : X) → Σ (chain (ln e) f) (λ c → len c ≡ n) → P# e
     F _ ._ ([ ._ ] , ())
     F _ _ (_∷_ ._  {{e<>f}} {{e#f}} c , len≡n) with head c
     F e f₁ (_∷_ .(pt e) {{e<>f}} {{e#f}} c , len≡n) | ln x = ⊥-elim (IP-ln e<>f e#f)
-    F e f₁ (_∷_ .(pt e) {{e<>f}} {{e#f}} c , len≡n) | pt x = x , e#f
+    F e f₁ (_∷_ .(pt e) {{e<>f}} {{e#f}} c , len≡n) | pt x = x ∶ e#f
 
     F⁻¹ : (e : L) (f : X) → lambda (ln e) f ≡ n →  P# e → Σ (chain (ln e) f) (λ c → len c ≡ n) 
-    F⁻¹ e f λ≡n (l , #)  = _∷_ (ln e) {{fromWitnessFalse (λ ())}} (sc (pt l) f) , PropEq.cong suc (lem₅ λ≡n)
+    F⁻¹ e f λ≡n (l ∶ #)  = _∷_ (ln e) {{fromWitnessFalse (λ ())}} (sc (pt l) f) , PropEq.cong suc (lem₅ {e₁ = l ∶ #} λ≡n)
 
     lem-id : (e : L) (f : X) → (λ≡n : lambda (ln e) f ≡ n) → (x : Σ (chain (ln e) f) (λ c → len c ≡ n)) → (F⁻¹ e f λ≡n (F e f x)) ≡ x
     lem-id e .(ln e) λ≡n ([ .(ln e) ] , ())
     lem-id e f λ≡n (_∷_ .(ln e) {{e<>f}} {{e#f}} c , proof) with (head c)
     lem-id e f₁ λ≡n (_∷_ .(ln e) {{e<>f}} {{e#f}} c , proof) | ln x = ⊥-elim (IP-ln e<>f e#f)
-    lem-id e f₁ λ≡n (_∷_ .(ln e) {{e<>f}} {{e#f}} c , proof) | pt x with PropEq.cong (Subset.elem) (A₂ ((sc (pt x) f₁) , ≡⇒≤ (PropEq.cong suc (lem₅ {e} {x , (e#f)} λ≡n)) , shortest-irred _ refl) (c , (≡⇒≤ proof) , shortest-irred c  (tail-shortest {c = ln e ∷ c} (trans proof (sym λ≡n)))))
+    lem-id e f₁ λ≡n (_∷_ .(ln e) {{e<>f}} {{e#f}} c , proof) | pt x with PropEq.cong (el) (A₂ ((sc (pt x) f₁) ∶ ( ≡⇒≤ (PropEq.cong suc (lem₅ {e} {x ∶ (e#f)} λ≡n)) , shortest-irred _ refl)) (c ∶ ((≡⇒≤ proof) , shortest-irred c  (tail-shortest {c = ln e ∷ c} (trans proof (sym λ≡n))))))
     lem-id e f₁ λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} .(sc (pt x) f₁) , proof) | pt x | refl = Inverse.to Σ-≡,≡↔≡ ⟨$⟩ (refl , (proof-irrelevance _ proof))
 
     J : (e : L) (f : X) → lambda (ln e) f ≡ n → Inverse (PropEq.setoid (Σ (chain (ln e) f) (λ c → len c ≡ n))) (PropEq.setoid (P# e))

@@ -11,7 +11,16 @@ open import Relation.Nullary.Decidable
 
 open import Relation.Binary.PropositionalEquality as PropEq
 
-open import Function
+open import Data.Product 
+
+open import Function 
+open import Function.Equality hiding (_∘_; setoid) renaming (cong to Icong)
+open import Function.Inverse renaming (sym to Isym; zip to Izip; _∘_ to _I∘_)
+open import Function.LeftInverse hiding (_∘_)
+
+open import Function.Related.TypeIsomorphisms
+
+import Relation.Binary.Sigma.Pointwise as SP
 
 open SemiringSolver
 
@@ -99,11 +108,15 @@ module Misc where
                     con 2 :+ y :+ (y :+ con 0))) refl ⌈ x /2⌉
                                      = (m≤m {2}) +-mono lem-2x⌈n/2⌉ {x}
 
-  record Subset (A : Set) (P : A → Set) : Set where
-    constructor _,_
+  record Σ' (A : Set) (P : A → Set) : Set where
+    constructor _∶_
     field
-      elem : A
-      .proof  : P elem
+      el : A
+      .pf  : P el
+  open Σ' public
+
+  Σ'≡ : ∀ {A P} {x y : Σ' A P} → el x ≡ el y → x ≡ y
+  Σ'≡ refl = refl
 
   ≤-≢⇒< : ∀ {x y} → x ≤ y → x ≢ y → x < y
   ≤-≢⇒< {zero} {zero} z≤n q = ⊥-elim (q refl)
@@ -121,3 +134,24 @@ module Misc where
   ¬<-≡ : ∀ {x y} → x < y → x ≡ y  → ⊥
   ¬<-≡ {zero} () refl
   ¬<-≡ {suc x} q refl = ¬<-≡ (pred-mono q) refl
+
+{-
+  restrict : {A B : Set} → (F : A ↔ B) (a₀ : A) → (Σ A (λ a → a ≢ a₀)) ↔ (Σ B (λ b → b ≢ Inverse.to F ⟨$⟩ a₀))
+  restrict {A} {B} F a₀ = SP.↔ F G
+    where G : {x : A} → x ≢ a₀ ↔ Inverse.to F ⟨$⟩ x ≢ Inverse.to F ⟨$⟩ a₀ 
+          G {x} = record { to = record { _⟨$⟩_ = {!!} ; cong = {!!} } ;
+                           from = {!!} ;
+                           inverse-of = {!!} }
+            where to : (x ≢ a₀) → (Inverse.to F ⟨$⟩ x ≢ Inverse.to F ⟨$⟩ a₀)
+                  to neq eq = neq (Inverse.injective F eq)
+
+                  from : (Inverse.to F ⟨$⟩ x ≢ Inverse.to F ⟨$⟩ a₀) → (x ≢ a₀)
+                  from neq eq = neq (Icong (Inverse.to F) eq)
+                 
+                  left-inverse-of : ∀ {w} → from (to w) ≡ w
+                  left-inverse-of {w} with to w
+                  ... | y  = {!!}
+            
+                  helper : {eq : x ≡ a₀} → (Icong (Inverse.from F) (Icong (Inverse.to F) eq)) ≡ {!!}
+                  helper = {!!}
+-}
