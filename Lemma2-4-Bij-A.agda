@@ -79,4 +79,16 @@ module Lemma2-4-Bij-A where
           from (nck ∶ ≡⋆) = nck ∶ ({!!} , ρe₂f≡)
             where .ρe₂f≡ : _
                   ρe₂f≡ = (trans (0<ρ<n/2.class-A-ρ {≥1 = ≥1} {<n = <n} nck (cong neck-e₂ ≡⋆)) (sym (trans (≥1-fin-pred (subst (_≤_ 1) (sym lem-ρ-fin) (toWitness ≥1))) (cong pred lem-ρ-fin))))
+
+  bij₂ : (e f : P) → {≥1 : True (1 ≤? ρ e f)} {<n : True (suc (ρ e f) ≤? ⌈ (pred n) /2⌉)} →
+         K e f (ρ-fin e f) ↔ Σ' (Neck e) (λ nck → ((neck-e₁ nck) ≡ (neck-e₁ (neck⋆ e f)) × (neck-e₂ nck) ≢ (neck-e₂ (neck⋆ e f))) × e ≢ (neck-e₂ nck))
+  bij₂ e f = record { to = record { _⟨$⟩_ = to ; cong = cong to } ;
+                                from = record { _⟨$⟩_ = from ; cong = cong from } ;
+                                inverse-of = record { left-inverse-of = λ _ → Σ'≡ refl ; right-inverse-of = λ _ → Σ'≡ refl } }
+    where to : K e f (ρ-fin e f) → Σ' (Neck e) (λ nck → ((neck-e₁ nck) ≡ (neck-e₁ (neck⋆ e f)) × (neck-e₂ nck) ≢ (neck-e₂ (neck⋆ e f))) × e ≢ (neck-e₂ nck))
+          to (nck ∶ (≢e , ρ≡)) = nck ∶ (0<ρ<predn/2⁻¹.class-B nck (trans ρ≡ lem-ρ-fin) ≢e , ≢e)
+  
+          from : Σ' (Neck e) (λ nck → ((neck-e₁ nck) ≡ (neck-e₁ (neck⋆ e f)) × (neck-e₂ nck) ≢ (neck-e₂ (neck⋆ e f))) × e ≢ (neck-e₂ nck)) → K e f (ρ-fin e f)
+          from (nck ∶ ((≡e₁⋆ , ≢e₂⋆) , ≢e)) = nck ∶ (≢e , (trans (0<ρ<n/2.class-B-ρ {<n = {!!}}  nck ≡e₁⋆ ≢e₂⋆ (≢sym ≢e)) (sym lem-ρ-fin)))
+
   

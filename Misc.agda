@@ -150,3 +150,6 @@ module Misc where
 
   ≡suc⇒⊥ : ∀ {x} → suc x ≡ x → ⊥
   ≡suc⇒⊥ ()
+
+  ≢sym : ∀ {A : Set} {x y : A} → x ≢ y → y ≢ x
+  ≢sym neq = λ eq → neq (sym eq)
