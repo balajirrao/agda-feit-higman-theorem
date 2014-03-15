@@ -42,8 +42,8 @@ open import Misc
 
 module Lemma2-4-Inv where
   
-  open import Lemma2-4
-
+  open import Lemma2-4 public
+  
   neck! : ∀ {e} {nck nck' : Neck e} → e ≢ neck-e₂ nck → neck-e₂ nck ≡ neck-e₂ nck' → nck ≡ nck'
   neck! {e} {e₁ ∶ e#e₁ , e₂ ∶ e₁#e₂} {e₁' ∶ e₁'#e , .e₂ ∶ e₁'#e₂'} neq refl =
                 cong (λ x → ppneck-gen x {≥1 = fromWitness ρee₂≥1})
