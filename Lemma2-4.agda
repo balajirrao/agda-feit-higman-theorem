@@ -188,7 +188,7 @@ module Lemma2-4 where
                       z = A₂-ρ (ppc ∶ (<n/2 , ppc-irred )) (sppc e f ∶ (toWitness <n , sppc-irred))
     
     
-    class-C₀-ρ : (nck : Neck e) → neck-e₁ nck ≢ neck-e₁ (neck⋆ e f) → neck-e₂ nck ≢ e → (ρ e f) < ⌈ (pred (n)) /2⌉ →  ρ (neck-e₂ nck) f ≡ 1 + ρ e f
+    class-C₀-ρ : (nck : Neck e) → .(neck-e₁ nck ≢ neck-e₁ (neck⋆ e f)) → neck-e₂ nck ≢ e → (ρ e f) < ⌈ (pred (n)) /2⌉ →  ρ (neck-e₂ nck) f ≡ 1 + ρ e f
     class-C₀-ρ ((e₁ ∶ e#e₁) , (e₂ ∶ e₁#e₂)) neck≢ e₂≢e <n/2 = ≤-≥⇒≡ is≤ (≰⇒> is≮)
       where open Data.Nat.≤-Reasoning
             .e₁#e : True ( ln e₁ #? pt e )
@@ -222,7 +222,7 @@ module Lemma2-4 where
                        2 * (1 + ρ e f) ≤⟨ m≤m {2} *-mono <n/2 ⟩
                        2 * ⌈ (pred (n)) /2⌉ ≤⟨ lem-2x⌈n/2⌉ ⟩ (n ∎)
 
-            c₂-irred : irred c₂
+            .c₂-irred : irred c₂
             c₂-irred = irred-∷ (ln e₁) (sc (pt e) (pt f) )
                        {fromWitness
                          (begin 2 ≤⟨ m≤m {2} *-mono toWitness ≥1 ⟩
@@ -399,8 +399,8 @@ module Lemma2-4 where
       ppc-shortest : (nck : Neck e) → (ppc-with-neck nck) is-ρ-shortest
       ppc-shortest nck = trans (ρ'ppc≡n nck) (toWitness ≡n/2)
 
-      e₂⋆ : (nck : Neck e) → P
-      e₂⋆ nck = (neck-e₂ $ ppneck (ppc-with-neck nck) {fromWitness (ρ'ppc≥1 nck)})
+    e₂⋆ : (nck : Neck e) → P
+    e₂⋆ nck = (neck-e₂ $ ppneck (ppc-with-neck nck) {fromWitness (ρ'ppc≥1 nck)})
     
     class-A₀-ρ : (nck : Neck e) → (neck-e₂ nck) ≡ (e₂⋆ nck) → ρ (neck-e₂ nck) f ≡ pred ⌈ (n) /2⌉
     class-A₀-ρ nck eq = begin

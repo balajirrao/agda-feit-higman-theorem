@@ -13,6 +13,9 @@ open import Relation.Binary.PropositionalEquality as PropEq
 
 open import Data.Product 
 
+import Data.Fin as F
+import Data.Fin.Props as F
+
 open import Function 
 open import Function.Equality hiding (_∘_; setoid) renaming (cong to Icong)
 open import Function.Inverse renaming (sym to Isym; zip to Izip; _∘_ to _I∘_)
@@ -135,23 +138,15 @@ module Misc where
   ¬<-≡ {zero} () refl
   ¬<-≡ {suc x} q refl = ¬<-≡ (pred-mono q) refl
 
-{-
-  restrict : {A B : Set} → (F : A ↔ B) (a₀ : A) → (Σ A (λ a → a ≢ a₀)) ↔ (Σ B (λ b → b ≢ Inverse.to F ⟨$⟩ a₀))
-  restrict {A} {B} F a₀ = SP.↔ F G
-    where G : {x : A} → x ≢ a₀ ↔ Inverse.to F ⟨$⟩ x ≢ Inverse.to F ⟨$⟩ a₀ 
-          G {x} = record { to = record { _⟨$⟩_ = {!!} ; cong = {!!} } ;
-                           from = {!!} ;
-                           inverse-of = {!!} }
-            where to : (x ≢ a₀) → (Inverse.to F ⟨$⟩ x ≢ Inverse.to F ⟨$⟩ a₀)
-                  to neq eq = neq (Inverse.injective F eq)
 
-                  from : (Inverse.to F ⟨$⟩ x ≢ Inverse.to F ⟨$⟩ a₀) → (x ≢ a₀)
-                  from neq eq = neq (Icong (Inverse.to F) eq)
-                 
-                  left-inverse-of : ∀ {w} → from (to w) ≡ w
-                  left-inverse-of {w} with to w
-                  ... | y  = {!!}
-            
-                  helper : {eq : x ≡ a₀} → (Icong (Inverse.from F) (Icong (Inverse.to F) eq)) ≡ {!!}
-                  helper = {!!}
--}
+  ≥1-fin-pred : ∀ {a}  {x : F.Fin a} → (F.toℕ x) ≥ 1 → F.toℕ (F.pred x) ≡ pred (F.toℕ x)
+  ≥1-fin-pred {zero} {()} p
+  ≥1-fin-pred {suc a} {F.zero} ()
+  ≥1-fin-pred {suc a} {F.suc x} p = F.inject₁-lemma x
+
+  ≡pred⇒zero : ∀ {x} → x ≡ pred x → x ≡ 0
+  ≡pred⇒zero {zero} refl = refl
+  ≡pred⇒zero {suc x} ()
+
+  ≡suc⇒⊥ : ∀ {x} → suc x ≡ x → ⊥
+  ≡suc⇒⊥ ()

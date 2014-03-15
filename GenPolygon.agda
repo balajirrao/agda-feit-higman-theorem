@@ -99,7 +99,7 @@ module GenPolygon where
   shortest-irred : ∀ {e f} (c : chain e f) → c is-shortest → irred c
   shortest-irred {.f} {f} [ .f ] cis = tt
   shortest-irred {e} {f} (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) cis = tt
-  shortest-irred {.e} {g} (e ∷ f ∷ c) cis = λ {n} x → ≤⇒≯
+  shortest-irred {.e} {g} (e ∷ f ∷ c) cis = λ {n} {z} x → ≤⇒≯
                                               (begin _ ≤⟨ s≤s (
                                                 sc-is-shorter-than
                                                   proj₁ (short-circuit (_th-segment-of_ n (e ∷ f ∷ c) ) x)) ⟩
