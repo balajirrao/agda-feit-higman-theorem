@@ -71,6 +71,7 @@ module GenPolygon where
   P# : (l : L) → Set
   P# l = Σ' P (λ p → True (ln l #? pt p))
 
+ 
   -- Axioms for Generalized Polygon
   postulate
     ss t : ℕ

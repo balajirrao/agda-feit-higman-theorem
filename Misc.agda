@@ -27,6 +27,7 @@ import Relation.Binary.Sigma.Pointwise as SP
 
 open SemiringSolver
 
+import Level 
 module Misc where
 
   ≤-≥⇒≡ : ∀ {x y} → x ≤ y → y ≤ x → x ≡ y
@@ -118,8 +119,19 @@ module Misc where
       .pf  : P el
   open Σ' public
 
-  Σ'≡ : ∀ {A P} {x y : Σ' A P} → el x ≡ el y → x ≡ y
-  Σ'≡ refl = refl
+  Σ'≡ : ∀ {A P} → {x y : Σ' A P} → el x ≡ el y → x ≡ y
+  Σ'≡ {_} {_} {el ∶ pf} {.el ∶ pf₁} refl = refl
+
+  ΣS : (A : Set) (P : A → Set) → Setoid _ _
+  ΣS A P = record { Carrier = Σ A P ; _≈_ = λ x y → proj₁ x ≡ proj₁ y ;
+                     isEquivalence = record
+                       { refl = refl ; sym = sym ; trans = trans } }
+  
+  _≈_ : {A : Set} {P : A → Set} → Rel (Σ A P) Level.zero
+  _≈_ {A} {P} = Setoid._≈_ (ΣS A P)
+  
+ -- _⇔_ : ∀ {A A'} (P : A → Set) (P' : A' → Set) → Set
+ -- P ⇔ P' = Inverse (ΣS _ P) (ΣS _ P')
 
   ≤-≢⇒< : ∀ {x y} → x ≤ y → x ≢ y → x < y
   ≤-≢⇒< {zero} {zero} z≤n q = ⊥-elim (q refl)
@@ -153,3 +165,14 @@ module Misc where
 
   ≢sym : ∀ {A : Set} {x y : A} → x ≢ y → y ≢ x
   ≢sym neq = λ eq → neq (sym eq)
+
+  ⌊≤⌉ : ∀ x → ⌊ x /2⌋ ≤ ⌈ x /2⌉
+  ⌊≤⌉ zero = z≤n
+  ⌊≤⌉ (suc zero) = z≤n
+  ⌊≤⌉ (suc (suc x)) = s≤s (⌊≤⌉ x)
+
+  lem-fin-subst : ∀ { a b } (x : F.Fin a) → (eq : a ≡ b) → F.toℕ (subst F.Fin eq x) ≡ F.toℕ x
+  lem-fin-subst x refl = refl
+
+  cong-pred-suc : ∀ {a b} → {x : a ≡ b} → cong pred (cong suc x) ≡ x
+  cong-pred-suc {x = refl} = refl

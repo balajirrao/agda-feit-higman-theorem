@@ -43,41 +43,7 @@ open import Misc
 module Lemma2-4-Inv where
   
   open import Lemma2-4 public
-  
-  neck! : ∀ {e} {nck nck' : Neck e} → e ≢ neck-e₂ nck → neck-e₂ nck ≡ neck-e₂ nck' → nck ≡ nck'
-  neck! {e} {e₁ ∶ e#e₁ , e₂ ∶ e₁#e₂} {e₁' ∶ e₁'#e , .e₂ ∶ e₁'#e₂'} neq refl =
-                cong (λ x → ppneck-gen x {≥1 = fromWitness ρee₂≥1})
-                  (cong el (A₂-ρ ((c as-ppc) ∶ ((s≤s (s≤s z≤n)) , irredc))
-                    ((c' as-ppc) ∶ ((s≤s (s≤s z≤n)) , irredc'))))
-    where c : chain (pt e) (pt e₂)
-          c = _∷_ (pt e) {{fromWitnessFalse (λ ())}} {{e#e₁}} (_∷_ (ln e₁) {{fromWitnessFalse (λ ())}} {{e₁#e₂}} [ pt e₂ ])
-  
-          c' : chain (pt e) (pt e₂)
-          c' =  _∷_ (pt e) {{fromWitnessFalse (λ ())}} {{e₁'#e}} (_∷_ (ln e₁') {{fromWitnessFalse (λ ())}} {{e₁'#e₂'}} [ pt e₂ ])
-
-          irredc : irred c
-          irredc {zero} x = IP-pt (fromWitnessFalse (λ eq → neq (pt-inj eq))) x 
-          irredc {suc n} {()} x
-
-          irredc' : irred c'
-          irredc' {zero} x = IP-pt (fromWitnessFalse (λ eq → neq (pt-inj eq))) x 
-          irredc' {suc n} {()} x
-
-          e₁≡e₁' : ln e₁ ≡ ln e₁'
-          e₁≡e₁' = cong neck (cong el (A₂ (c ∶ ((s≤s (s≤s (s≤s z≤n))) , irredc)) (c' ∶ ((s≤s (s≤s (s≤s z≤n))) , irredc'))))
-   
-          result : e₁ ∶ e#e₁ ≡ e₁' ∶ e₁'#e
-          result = Σ'≡ {x =  e₁ ∶ e#e₁} {y = e₁' ∶ e₁'#e} (ln-inj e₁≡e₁')
-
-          x≡0or≥1 : ∀ {x} →  (x ≡ 0) ⊎ (x ≥ 1)
-          x≡0or≥1 {zero} = inj₁ refl
-          x≡0or≥1 {suc x} = inj₂ (s≤s z≤n)
-
-          ρee₂≥1 : ρ e e₂ ≥ 1  
-          ρee₂≥1 with x≡0or≥1 {ρ e e₂}
-          ρee₂≥1 | inj₁ x = ⊥-elim (neq (ρ≡0⇒e≡f x))
-          ρee₂≥1 | inj₂ y = y
-
+ 
   module 0<ρ<predn/2⁻¹ {e f : P} {≥1 : True (1 ≤? ρ e f)} {<predn : True (suc (ρ e f) ≤? ⌈ (pred (n)) /2⌉)} where
     <n : True (suc (ρ e f) ≤? ⌈ n /2⌉)
     <n = fromWitness (begin
@@ -140,22 +106,22 @@ module Lemma2-4-Inv where
                        (neck-e₂ nck) ≢ (neck-e₂ (neck⋆ e f {≥1}))
     class-B nck ρ≡ e≢ e₂≡e₂⋆ =(¬<-≡ (toWitness ≥1) (sym (≡pred⇒zero (trans (sym ρ≡) (0<ρ<n/2.class-A-ρ {≥1 = ≥1} {<n = <n} nck e₂≡e₂⋆)))))
 
-  module ρ≡n/2⁻¹ {e f : P} {n-even : Even (n)} {≡n/2 : True ( ⌈ (n) /2⌉ ℕ≟ ρ e f)} where
+  module ρ≡n/2⁻¹ {e f : P} {n-even : Even (n)} {≡n/2 : True ( ρ e f  ℕ≟ ⌈ (n) /2⌉ )} where
      
     ≥1 : True (1 ≤? ρ e f )
-    ≥1 = fromWitness (begin 1 ≤⟨ s≤s z≤n ⟩ ⌈ n /2⌉ ≡⟨ toWitness ≡n/2 ⟩ (ρ e f ∎))
+    ≥1 = fromWitness (begin 1 ≤⟨ s≤s z≤n ⟩ ⌈ n /2⌉ ≡⟨ sym $ toWitness ≡n/2 ⟩ (ρ e f ∎))
       where open Data.Nat.≤-Reasoning
 
-    class-A₀ : (nck : Neck e) →  ρ (neck-e₂ nck) f ≡ pred ⌈ (n) /2⌉ → (neck-e₂ nck) ≡ ρ≡n/2.e₂⋆ {n-even = n-even} {≡n/2 = ≡n/2} nck
-    class-A₀ nck ρ≡ with pt (neck-e₂ nck) ≟ pt (ρ≡n/2.e₂⋆ {n-even = n-even} {≡n/2 = ≡n/2} nck)
+    class-A₀ : (nck : Neck e) →  ρ (neck-e₂ nck) f ≡ pred ⌈ (n) /2⌉ → (neck-e₂ nck) ≡ ρ≡n/2.e₂⋆ {n-even = n-even} {≡n/2 = ≡n/2} (proj₁ nck)
+    class-A₀ nck ρ≡ with pt (neck-e₂ nck) ≟ pt (ρ≡n/2.e₂⋆ {n-even = n-even} {≡n/2 = ≡n/2} (proj₁ nck))
     class-A₀ nck ρ≡ | yes p = pt-inj p
     class-A₀ nck ρ≡ | no ¬p = ⊥-elim (¬<-≡ (s≤s z≤n)
                  (sym $ (≡pred⇒zero $
                    trans (sym (ρ≡n/2.class-A₁-ρ
                      nck (λ x → ¬p (cong pt x)))) ρ≡)))
 
-    class-A₁ :  (nck : Neck e) →  ρ (neck-e₂ nck) f ≡ ⌈ (n) /2⌉ → (neck-e₂ nck) ≢ ρ≡n/2.e₂⋆ {n-even = n-even} {≡n/2 = ≡n/2} nck
-    class-A₁ nck ρ≡ with pt (neck-e₂ nck) ≟ pt (ρ≡n/2.e₂⋆ {n-even = n-even} {≡n/2 = ≡n/2} nck)
+    class-A₁ :  (nck : Neck e) →  ρ (neck-e₂ nck) f ≡ ⌈ (n) /2⌉ → (neck-e₂ nck) ≢ ρ≡n/2.e₂⋆ {n-even = n-even} {≡n/2 = ≡n/2} (proj₁ nck)
+    class-A₁ nck ρ≡ with pt (neck-e₂ nck) ≟ pt (ρ≡n/2.e₂⋆ {n-even = n-even} {≡n/2 = ≡n/2} (proj₁ nck))
     class-A₁ nck ρ≡ | yes p = ⊥-elim (≡suc⇒⊥ (trans (sym ρ≡) (ρ≡n/2.class-A₀-ρ nck (pt-inj p))))
     class-A₁ nck ρ≡ | no ¬p = λ eq → ¬p (cong pt eq)
     

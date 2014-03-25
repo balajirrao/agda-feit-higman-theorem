@@ -11,6 +11,8 @@ open import Data.Unit hiding (_≤?_; _≤_)
 
 open import Data.Product
 
+open import Data.Sum
+
 open import Data.Nat
 open import Function
 
@@ -229,3 +231,103 @@ module Lemma2-4-core where
 
   ln-inj : ∀ {x y} → ln x ≡ ln y → x ≡ y
   ln-inj refl = refl
+
+  -- In the below two lemmas we prove that to ensure λ < n
+  -- we need to ensure ρ < n / 2
+  
+  lem-ρ-len<n : ∀ {e f} {ppc : ppchain e f} → ρ' ppc < ⌈ n /2⌉ → len (ppc as-c) < n
+  lem-ρ-len<n {e} {f} {ppc} p = pred-mono (begin
+                      2 + len (ppc as-c)
+                        ≡⟨ cong (_+_ 2) lem-2xρ-len ⟩
+                      2 + 2 * ρ' ppc
+                        ≡⟨ solve 1
+                      (λ t₁ →
+                        con 2 :+ t₁ :+ (t₁ :+ con 0) :=
+                            con 1 :+ t₁ :+ (con 1 :+ t₁ :+ con 0))
+                                           refl (ρ' ppc) ⟩
+                      2 * (1 + ρ' ppc)
+                        ≤⟨ m≤m {2} *-mono p ⟩
+                      2 * ⌈ n /2⌉
+                        ≤⟨ lem-2x⌈n/2⌉ ⟩
+                      (1 + n ∎) )
+    where open Data.Nat.≤-Reasoning
+
+  lem-len-ρ<⌈n/2⌉ : ∀ {e f} {ppc : ppchain e f} → len (ppc as-c) < n →  ρ' ppc < ⌈ n /2⌉
+  lem-len-ρ<⌈n/2⌉ {e} {f} {ppc} p = begin
+                              1 + ρ' ppc
+                                ≡⟨ cong suc (PropEq.sym lem-len/2-ρ) ⟩
+                              1 + ⌊ len (ppc as-c) /2⌋
+                                ≤⟨ ⌊n/2⌋-mono (s≤s p) ⟩
+                              (⌈ n /2⌉ ∎)
+    where open Data.Nat.≤-Reasoning
+
+  A₁-ρ : (e f : P) → ∃ (λ (ppc : ppchain e f) → ρ' ppc ≤ ⌊ n /2⌋)
+  A₁-ρ e f = (proj₁ (A₁ (pt e) (pt f))) as-ppc ,
+                    (begin
+                      ρ' _
+                         ≡⟨ PropEq.sym lem-len/2-ρ ⟩
+                      ⌊ len (((proj₁ (A₁ (pt e) (pt f))) as-ppc) as-c) /2⌋
+                        ≡⟨ cong ⌊_/2⌋ (cong len (lem-id₀ {c = (proj₁ (A₁ (pt e) (pt f)))})) ⟩
+                      ⌊ len (proj₁ (A₁ (pt e) (pt f))) /2⌋
+                        ≤⟨ ⌊n/2⌋-mono (proj₂ (A₁ (pt e) (pt f))) ⟩
+                      (⌊ n /2⌋ ∎))
+         where open Data.Nat.≤-Reasoning
+              
+  A₁'-ρ : ∀ {e f} → (ρ e f) ≤ ⌊ n /2⌋
+  A₁'-ρ {e} {f} with sppc-ρ-shorter-than (proj₁ (A₁-ρ e f)) | proj₂ (A₁-ρ e f)
+  A₁'-ρ {e} {f} | a | b = begin ρ' (sppc e f) ≤⟨ a ⟩ ρ' (proj₁ (A₁-ρ e f)) ≤⟨ b ⟩ ⌊ n /2⌋  ∎
+        where open Data.Nat.≤-Reasoning
+                                
+  -- Axiom A₂ in ρ terms, but now with proof
+  A₂-ρ : ∀ {e f} (ppc ppc' : Σ' (ppchain e f) (λ z → ρ' z < ⌈ n /2⌉ × irred (z as-c))) →
+                                                 ppc ≡ ppc'
+  A₂-ρ (ppc ∶ p) (ppc' ∶ p') with 
+                                  cong (λ x → el x as-ppc) (A₂ (ppc as-c ∶ ( (lem-ρ-len<n (proj₁ p) , proj₂ p)))
+                                  (ppc' as-c ∶ ((lem-ρ-len<n (proj₁ p') , proj₂ p'))))
+  ... | z rewrite lem-id₁ {ppc = ppc} | lem-id₁ {ppc = ppc'} | z = refl
+
+   
+  lem-neckl : {x y : P} {ppc : ppchain x y} {≥1 : True (1 ≤? ρ' ppc)} → ln (neck-e₁ (ppneck ppc)) ≡ 
+                      (neck (ppc as-c))
+  lem-neckl {ppc = [ e ]} = λ {}
+  lem-neckl {ppc = _∶⟨_⟩∶_ ._ _ ppc {{e#e₁}} {{e₁#e₂}}} = refl
+ 
+  T#sym : ∀ {e f} → True (e #? f) → True (f #? e)
+  T#sym x = fromWitness (#sym (toWitness x))
+   
+  neck! : ∀ {e} {nck nck' : Neck e} → e ≢ neck-e₂ nck → neck-e₂ nck ≡ neck-e₂ nck' → nck ≡ nck'
+  neck! {e} {e₁ ∶ e#e₁ , e₂ ∶ e₁#e₂} {e₁' ∶ e₁'#e , .e₂ ∶ e₁'#e₂'} neq refl =
+                cong (λ x → ppneck-gen x {≥1 = fromWitness ρee₂≥1})
+                  (cong el (A₂-ρ ((c as-ppc) ∶ ((s≤s (s≤s z≤n)) , irredc))
+                    ((c' as-ppc) ∶ ((s≤s (s≤s z≤n)) , irredc'))))
+    where c : chain (pt e) (pt e₂)
+          c = _∷_ (pt e) {{fromWitnessFalse (λ ())}} {{e#e₁}} (_∷_ (ln e₁) {{fromWitnessFalse (λ ())}} {{e₁#e₂}} [ pt e₂ ])
+  
+          c' : chain (pt e) (pt e₂)
+          c' =  _∷_ (pt e) {{fromWitnessFalse (λ ())}} {{e₁'#e}} (_∷_ (ln e₁') {{fromWitnessFalse (λ ())}} {{e₁'#e₂'}} [ pt e₂ ])
+
+          irredc : irred c
+          irredc {zero} x = IP-pt (fromWitnessFalse (λ eq → neq (pt-inj eq))) x 
+          irredc {suc n} {()} x
+
+          irredc' : irred c'
+          irredc' {zero} x = IP-pt (fromWitnessFalse (λ eq → neq (pt-inj eq))) x 
+          irredc' {suc n} {()} x
+
+          e₁≡e₁' : ln e₁ ≡ ln e₁'
+          e₁≡e₁' = cong neck (cong el (A₂ (c ∶ ((s≤s (s≤s (s≤s z≤n))) , irredc)) (c' ∶ ((s≤s (s≤s (s≤s z≤n))) , irredc'))))
+   
+          result : e₁ ∶ e#e₁ ≡ e₁' ∶ e₁'#e
+          result = Σ'≡ {x =  e₁ ∶ e#e₁} {y = e₁' ∶ e₁'#e} (ln-inj e₁≡e₁')
+
+          x≡0or≥1 : ∀ {x} →  (x ≡ 0) ⊎ (x ≥ 1)
+          x≡0or≥1 {zero} = inj₁ refl
+          x≡0or≥1 {suc x} = inj₂ (s≤s z≤n)
+
+          ρee₂≥1 : ρ e e₂ ≥ 1  
+          ρee₂≥1 with x≡0or≥1 {ρ e e₂}
+          ρee₂≥1 | inj₁ x = ⊥-elim (neq (ρ≡0⇒e≡f x))
+          ρee₂≥1 | inj₂ y = y
+
+  K : (e f : P) (i : ℕ) → Set
+  K e f i = Σ (Neck e) (λ nck → (neck-e₂ nck ≢ e) × ρ (neck-e₂ nck) f ≡ i)
