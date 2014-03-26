@@ -49,15 +49,6 @@ open import Lemma2-4-Inv
 
 module Lemma2-4-Bij-B where
  
-
-  postulate
-    Σ↔ : 
-        {A₁ A₂ : Set}
-        {B₁ : A₁ → Set} {B₂ : A₂ → Set}
-        (A₁↔A₂ : A₁ ↔ A₂) →
-        (∀ {x} → B₁ x ⇔ B₂ (Inverse.to A₁↔A₂ ⟨$⟩ x)) →
-        (Σ A₁ B₁) ↔ Σ A₂ B₂
-
   ln-val : ∀ {e} → L# e → F.Fin (1 + t) 
   ln-val {e} x = Inverse.to (GP-L e) ⟨$⟩ x
 
@@ -146,7 +137,8 @@ module Lemma2-4-Bij-B where
 
     bij₀ : S₀ ↔ S₁ (ln-val (proj₁ nck⋆)) (pt-val (proj₂ nck⋆)) (pt-val (e ∶ (T#sym (neck-e#e₁ nck⋆))))
     bij₀ = Σ↔ neck-value-bij (λ {x} → record { to = record { _⟨$⟩_ = to {x} ; cong = cong to } ; from = record { _⟨$⟩_ = from {x} ; cong = cong (from {x}) } })
-      where to : {x : Neck e} →
+      where postulate Σ↔ : predicate-irrelevant-Σ↔
+            to : {x : Neck e} →
                  A x →
                  B (ln-val (proj₁ nck⋆)) (pt-val (proj₂ nck⋆)) (pt-val (e ∶ (T#sym (neck-e#e₁ nck⋆)))) (neck-value x)
             to {._ ∶ proof , e₂ ∶ proof′} ((refl , ≢₁) , ≢₂) = refl , ((λ x → ≢₁ (cong el $ pt-val-inj x)) , (λ x → ≢₂ (PropEq.sym $ cong el $ pt-val-inj x)))
@@ -163,7 +155,7 @@ module Lemma2-4-Bij-B where
     bij₁ t₀ s₀ s₁ = record { to = record { _⟨$⟩_ = λ x → ((proj₁ $ proj₁ x) , (proj₁ $ proj₂ x)) , (proj₂ $ proj₁ x) , (proj₂ $ proj₂ x) ; cong = cong _ } ; from = record { _⟨$⟩_ = λ x → ((proj₁ $ proj₁ x) , (proj₁ $ proj₂ x)) , ((proj₂ $ proj₁ x) , (proj₂ $ proj₂ x)) ; cong = cong _ } ; inverse-of = record { left-inverse-of = λ x → refl ; right-inverse-of = λ x → refl } }
 
     bij₂ : ∀ t₀ s₀ s₁ → s₀ ≢ s₁ → (Σ (Σ (F.Fin (1 + t)) (λ x → x ≡ t₀)) (λ _ → Σ (F.Fin (1 + s)) (λ x → x ≢ s₀ × x ≢ s₁))) ↔ (Σ (F.Fin 1) (λ _ → F.Fin (pred s)))
-    bij₂ t₀ s₀ s₁ neq = SP.↔ (fin-one t₀) (fin-exclude₂ {pred s} s₀ s₁ neq)
+    bij₂ t₀ s₀ s₁ neq = SP.↔ (fin-one t₀) (λ {x} → fin-exclude₂ {pred s} s₀ s₁ neq)
 
     bij₃ : F.Fin (pred s) ↔ (Σ (F.Fin 1) (λ _ → F.Fin (pred s)))
     bij₃ = record { to = record { _⟨$⟩_ = λ x → F.zero , x ; cong = cong _ } ; from = record { _⟨$⟩_ = λ x → proj₂ x ; cong = cong _ } ; inverse-of = record { left-inverse-of = λ x → refl ; right-inverse-of = λ x → helper x } }
@@ -184,7 +176,8 @@ module Lemma2-4-Bij-B where
     bij₁ : (Σ (Neck e) (λ nck → proj₁ nck ≢ proj₁ nck⋆ × e ≢ neck-e₂ nck)) ↔ (Σ (F.Fin (1 + t) × (F.Fin (1 + s))) (λ y → proj₁ y ≢ ln-val (proj₁ nck⋆) × proj₂ y ≢ pt-val-on (proj₁ y) (e ∶ T#sym (pf (ln-val⁻¹ (proj₁ y))))))
     bij₁ = Σ↔ neck-value-bij (λ {x} → (SP.⇔ (record { to = record { _⟨$⟩_ = to₀ x ; cong = cong (to₀ x) } ; from = record { _⟨$⟩_ = from₀ x ; cong = cong (from₀ x) } })
                              (to {x}) (from {x})))
-      where to₀ : (x : Neck e) → proj₁ x ≢ proj₁ nck⋆ → ln-val (proj₁ x) ≢ ln-val (proj₁ nck⋆)
+      where postulate Σ↔ : predicate-irrelevant-Σ↔
+            to₀ : (x : Neck e) → proj₁ x ≢ proj₁ nck⋆ → ln-val (proj₁ x) ≢ ln-val (proj₁ nck⋆)
             to₀ x neq = λ eq → neq (Inverse.injective (GP-L e) eq)
             
             from₀ : (x : Neck e) → ln-val (proj₁ x) ≢ ln-val (proj₁ nck⋆) → proj₁ x ≢ proj₁ nck⋆
@@ -227,7 +220,8 @@ module Lemma2-4-Bij-B where
 
     bij₀ : Σ (Neck e) (λ nck → nck ≢ nck⋆ × (neck-e₂ nck) ≢ e) ↔ Σ (Neck e) (λ nck → Bijection₂.A e f nck⋆ distinct nck ⊎ Bijection₃.S e f nck⋆ nck)
     bij₀ = Σ↔ Iid  (λ {x} → record { to = record { _⟨$⟩_ = to x ; cong = cong (to x) } ; from = record { _⟨$⟩_ = from x ; cong = cong (from x) } })
-      where to : (x : Neck e) → (x ≢ nck⋆ × neck-e₂ x ≢ e) →
+      where postulate Σ↔ : predicate-irrelevant-Σ↔
+            to : (x : Neck e) → (x ≢ nck⋆ × neck-e₂ x ≢ e) →
                     (Bijection₂.A e f nck⋆ distinct x ⊎
                     Bijection₃.S e f nck⋆ x)
             to nck proof with ln (neck-e₁ nck) ≟ ln (neck-e₁ nck⋆)
@@ -276,7 +270,8 @@ module Bijection₆ (e f : P) (n-even : Even (n)) (≡n/2 : True ( ρ e f ℕ≟
                     (distinct : ∀ {l#e} → el (e₂⋆ l#e) ≢ e) where
     bij₁ : Σ (Neck e) (λ nck → (neck-e₂ nck) ≢ el (e₂⋆ (proj₁ nck)) × (neck-e₂ nck) ≢ e) ↔ Σ (F.Fin (1 + t) × F.Fin (1 + s)) (λ x → proj₂ x ≢ pt-val-on (proj₁ x) (e₂⋆ (ln-val⁻¹ (proj₁ x))) × proj₂ x ≢ pt-val-on (proj₁ x) (e ∶ (T#sym (pf (ln-val⁻¹ (proj₁ x))))))
     bij₁ = Σ↔ neck-value-bij (λ {x} → record { to = record { _⟨$⟩_ = to {x} ; cong = cong to } ; from = record { _⟨$⟩_ = from {x} ; cong = cong from } })
-      where to : {x : Neck e} → (neck-e₂ x ≢ el (e₂⋆ (proj₁ x)) × neck-e₂ x ≢ e) →
+      where postulate Σ↔ : predicate-irrelevant-Σ↔
+            to : {x : Neck e} → (neck-e₂ x ≢ el (e₂⋆ (proj₁ x)) × neck-e₂ x ≢ e) →
                 proj₂ (Inverse.to neck-value-bij ⟨$⟩ x) ≢
                   pt-val-on (proj₁ (Inverse.to neck-value-bij ⟨$⟩ x))
                   (e₂⋆ (ln-val⁻¹ (proj₁ (Inverse.to neck-value-bij ⟨$⟩ x))))
@@ -317,7 +312,7 @@ module Bijection₆ (e f : P) (n-even : Even (n)) (≡n/2 : True ( ρ e f ℕ≟
     bij₂ g₀ g₁ = record { to = record { _⟨$⟩_ = λ x → (proj₁ $ proj₁ x) , ((proj₂ $ proj₁ x) , proj₂ x) ; cong = cong _ } ; from = record { _⟨$⟩_ = λ x → ((proj₁ x) , (proj₁ $ proj₂ x)) , (proj₂ $ proj₂ x) ; cong = cong _ } ; inverse-of = record { left-inverse-of = λ x → refl ; right-inverse-of = λ x → refl } }
     
     bij₃ : (g₀ g₁ : F.Fin (1 + t) → F.Fin (1 + s)) → (∀ z → g₀ z ≢ g₁ z) → Σ (F.Fin (1 + t))  (λ x → Σ (F.Fin (1 + s)) (λ y → y ≢ g₀ x × y ≢ g₁ x)) ↔ Σ (F.Fin (1 + t)) (λ _ → F.Fin (pred s))
-    bij₃ g₀ g₁ neq = SP.↔ Iid (λ {x} → (fin-exclude₂ (g₀ x) (g₁ x) (neq x)))
+    bij₃ g₀ g₁ neq = SP.↔ Iid (λ {x} → fin-exclude₂ (g₀ x) (g₁ x) (neq x))
 
     bij₄ : Σ (Neck e) (λ nck → (neck-e₂ nck) ≢ el (e₂⋆ (proj₁ nck)) × (neck-e₂ nck) ≢ e) ↔ Σ (F.Fin (1 + t)) (λ _ → F.Fin (pred s))
     bij₄  = bij₃ _ _ (λ z x → distinct {ln-val⁻¹ z} (cong el $ Inverse.injective (GP-P (el (ln-val⁻¹ z))) x)) ∘ bij₂ _ _ ∘ bij₁
@@ -341,7 +336,8 @@ module Bijection₀ (e f : P) where
                                         ; from = record { _⟨$⟩_ = from {x} ; cong = cong from }
                                         })
 
-      where to : {x : Neck e} → neck-e₂ x ≢ e → proj₂ (neck-value x) ≢ pt-val-on (proj₁ (neck-value x)) (e ∶  T#sym (pf (ln-val⁻¹ (proj₁ (neck-value x)))))
+      where postulate Σ↔ : predicate-irrelevant-Σ↔
+            to : {x : Neck e} → neck-e₂ x ≢ e → proj₂ (neck-value x) ≢ pt-val-on (proj₁ (neck-value x)) (e ∶  T#sym (pf (ln-val⁻¹ (proj₁ (neck-value x)))))
             to {e₁ , e₂} neq with (ln-val-id₀ {e} {e₁})
             ... | a = λ eq → (≢sym neq) $
                            cong el $

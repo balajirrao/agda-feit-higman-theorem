@@ -46,7 +46,7 @@ open import Misc
 
 module Lemma2-4-Final where
   
-  open import Lemma2-4
+  open import Lemma2-4 public
 
   lem₀ : ∀ {e f} → ρ e f ≡ 0 → F.Fin 0 ↔ (K e f 0)
   lem₀ {e} {f} ρ≡ = record { to = record { _⟨$⟩_ = to ; cong = cong to } ; from = record { _⟨$⟩_ = from ; cong = cong from } ; inverse-of = record { left-inverse-of = left-inverse-of ; right-inverse-of = right-inverse-of } }
@@ -302,14 +302,25 @@ module Lemma2-4-Final where
 
   bij₀ : ∀ {e f q} → (Σ (M e f (suc q)) (λ _ → ⊤)) ↔ (Σ (M e f (suc q)) (λ x → neck-e₂ (ppneck′ x) ≡ e ⊎
                                                                                  neck-e₂ (ppneck′ x) ≢ e))
-  bij₀ {e} {f} {q} = bijA.Σ↔ Iid (λ {x} → record { to = record { _⟨$⟩_ = to {x} ; cong = cong to } ; from = record { _⟨$⟩_ = from {x} ; cong = cong (from {x}) } })
+  bij₀ {e} {f} {q} = SP.↔ Iid (λ {x} → record { to = record { _⟨$⟩_ = to ; cong = cong to } ; from = record { _⟨$⟩_ = from {x} ; cong = cong from } ; inverse-of = record { left-inverse-of = λ _ → refl ; right-inverse-of = right-inverse-of } })
     where to : {x : M e f (suc q)} → ⊤ → neck-e₂ (ppneck′ x) ≡ e ⊎ neck-e₂ (ppneck′ x) ≢ e
           to {x} tt with pt (neck-e₂ (ppneck′ x)) ≟ pt e
           to tt | yes p = inj₁ (pt-inj p)
           to tt | no ¬p = inj₂ (λ x → ¬p (cong pt x))
 
-          from : {x : M e f (suc q)} → _ → ⊤
-          from x = tt
+          from : {x : M e f (suc q)} → neck-e₂ (ppneck′ x) ≡ e ⊎ neck-e₂ (ppneck′ x) ≢ e → ⊤
+          from _ = tt
+
+          left-inverse-of : {x : M e f (suc q)} → ∀ z → from (to {x} z) ≡ z
+          left-inverse-of x = refl
+
+          right-inverse-of :{x : M e f (suc q)} → ∀ z → to (from {x} z) ≡ z
+          right-inverse-of {x} (inj₁ z) with pt (neck-e₂ (ppneck′ x)) ≟ pt e
+          right-inverse-of (inj₁ z) | yes p = cong inj₁ (PropEq.proof-irrelevance (pt-inj p) z)
+          right-inverse-of (inj₁ z) | no ¬p = ⊥-elim (¬p (cong pt z))
+          right-inverse-of {x} (inj₂ y) with pt (neck-e₂ (ppneck′ x)) ≟ pt e
+          right-inverse-of (inj₂ y) | yes p = ⊥-elim (y (pt-inj p))
+          right-inverse-of (inj₂ y) | no ¬p = cong inj₂ (≢-proof-irrelevance (λ x → ¬p (cong pt x)) y)
 
   bij₁ : ∀ {A : Set} {P : A → Set} → (Σ A (λ x → P x ⊎ ¬ (P x))) ↔ ((Σ A P) ⊎ (Σ A (λ x → ¬ (P x))))
   bij₁ {A} {P} =  record { to = record { _⟨$⟩_ = to ; cong = cong to } ; from = record { _⟨$⟩_ = from ; cong = cong from } ; inverse-of = record { left-inverse-of = left-inverse-of ; right-inverse-of = right-inverse-of } }
@@ -430,7 +441,7 @@ module Lemma2-4-Final where
     bij₈ : ∀ {e f} {i : ℕ} →
              Σ (M e f (suc q)) (λ x → (neck-e₂ $ ppneck′ x) ≢ e × ρ (neck-e₂ $ ppneck′ x) f ≡ i) ↔
              Σ (Σ (Neck e) (λ nck → (M (neck-e₂ nck) f q))) (λ x → neck-e₂ (proj₁ x) ≢ e × ρ (neck-e₂ (proj₁ x)) f ≡ i) 
-    bij₈ {e} {f} {i}= bijA.Σ↔ (record
+    bij₈ {e} {f} {i}= SP.↔ (record
                                        { to = record { _⟨$⟩_ = to ; cong = cong to }
                                        ; from = record { _⟨$⟩_ = from ; cong = cong from }
                                        ; inverse-of =
@@ -438,7 +449,7 @@ module Lemma2-4-Final where
                                            { left-inverse-of = left-inverse-of
                                            ; right-inverse-of = right-inverse-of
                                            }
-                                       }) FunEq.id
+                                       }) Iid
       where to : M e f (suc q) → Σ (Neck e) (λ nck → (M (neck-e₂ nck) f q))
             to x = < ppneck′ , pptail′ > x
 

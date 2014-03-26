@@ -22,61 +22,15 @@ open SemiringSolver
 
 open import Function hiding (_∘_)
 
-open import Data.Vec
+open import Data.Vec hiding (reverse)
+
+open import Function.Related.TypeIsomorphisms
 
 open import Misc
 
+import Relation.Binary.Sigma.Pointwise as SP
+
 module FinBijections where
-  
-  postulate
-    prod-bij : ∀ {a b} → Inverse (PropEq.setoid (Fin a × Fin b)) (finSetoid (a * b))
-{-
-    bij-such-that : {X : Set} → (x y : X) → Inverse (PropEq.setoid X) (PropEq.setoid X)
-    lem-bij-such-that : ∀ {X} → (x y : X) →
-                         Inverse.to (bij-such-that x y) ⟨$⟩ x ≡ y -}
-
-    fin-exclude : ∀ {a} → ( x : Fin (suc a)) → Inverse (PropEq.setoid (Σ (Fin (suc a)) (λ x₁ → x₁ ≢ x))) (finSetoid a)
-
-    fin-exclude₂ : ∀ {a} → (x y : Fin (suc (suc a))) → x ≢ y → Inverse (PropEq.setoid (Σ (Fin (suc (suc a))) (λ x₁ → x₁ ≢ x × x₁ ≢ y))) (finSetoid a)
-
-    fin-one : ∀ {A : Set} → (x : A) → Σ A (λ x₁ → x₁ ≡ x) ↔ Fin 1
-
- -- rotl : ∀ {a} → Fin (suc a) → Fin (suc a)
-
- -- rotl {a} zero = fromℕ a
- -- rotl (suc x) = fromℕ≤ (toℕ (inject₁ x))
-
-  --rotln : ∀ {a} → ℕ → Fin (suc a) → Fin (suc a)
- -- rotln zero = id
- -- rotln (suc m) = rotln m ∘ rotl
-
- -- →zero : ∀ {a} (x : Fin (suc a)) → Fin (suc a) → Fin (suc a)
- -- →zero x = rotln (toℕ x)
-{-
-  F : ∀ {a} (i : Fin (suc (suc a))) → toℕ (pred i) N< (suc a)
-  F {zero} zero = s≤s z≤n
-  F {zero} (suc zero) = m≤m {1}
-  F {zero} (suc (suc ()))
-  F {suc a} zero = s≤s z≤n
-  F {suc a} (suc i) rewrite inject₁-lemma i = prop-toℕ-≤ (suc i)
-
-  G : ∀ {a} (x : Fin (suc (suc a))) → Σ (Fin (suc (suc a))) (λ x₁ → x ≢ x₁) → Fin (suc a)
-  G x (proj₁ , proj₂) with compare proj₁ x
-  G x (.(inject least) , proj₂) | less .x least = inject! least
-  G x (.x , proj₂) | equal .x = ⊥-elim (proj₂ refl)
-  G .(inject least) (greatest , proj₂) | greater .greatest least = inject! least
-
-
-  H : ∀ {a} (x : Fin (suc (suc a))) →  Fin (suc a)  → Σ (Fin (suc (suc a))) (λ x₁ → x ≢ x₁)
-  H x y with (inject₁ y) | compare (inject₁ y) x
-  H x y | .(inject least) | less .x least = (inject least) , (λ x₁ → {!inject-lemma least!})
-  H x y | .x | equal .x = x , {!!}
-  H .(inject least) y | greatest | greater .greatest least = greatest , (λ x → {!!})
-
-  exclude : ∀ {a} (x : Fin (2 N+ a)) → Fin (2 N+ a) → Fin (1 N+ a)
-  exclude {a} x y = {! fromℕ≤ (toℕ!}
-
-  -}
 
   sum-bij : ∀ {a b} → (Fin a ⊎ Fin b) ↔ Fin (a N+ b)
   sum-bij {a} = record { to = record { _⟨$⟩_ = to ; cong = PropEq.cong to } ; from = record { _⟨$⟩_ = from ; cong = PropEq.cong from } ; inverse-of = record { left-inverse-of = left-inverse-of ; right-inverse-of = right-inverse-of {a} } }
@@ -174,3 +128,155 @@ module FinBijections where
 
   fromℕ-bij : {P Q : ℕ → Set} {a : ℕ} → (∀ {x} → P x ↔ Q x) → ({y : Fin a} → P (toℕ y) ↔ Q (toℕ y))
   fromℕ-bij {P} {Q} {a} bij {y} = bij {toℕ y}
+
+  lem-tabulate : ∀ {a b} → sum′ (tabulate {a} (λ _ → b)) ≡ a * b
+  lem-tabulate {zero} =  refl
+  lem-tabulate {suc a} {b} = PropEq.cong (_N+_ b) (lem-tabulate {a} {b})
+
+  prod-bij : ∀ {a b} → Inverse (PropEq.setoid (Fin a × Fin b)) (finSetoid (a * b))
+  prod-bij {zero} {b} = helper
+    where to : Fin 0 × Fin b → Fin 0
+          to ( () , _)
+          
+          from : Fin 0 → Fin 0 × Fin b
+          from ()
+
+          left-inverse-of : ∀ x → from (to x) ≡ x
+          left-inverse-of ( () , _)
+
+          right-inverse-of : ∀ x → to (from x) ≡ x
+          right-inverse-of ()
+
+          helper : (Fin 0 × Fin b) ↔ Fin 0
+          helper = record
+                     { to = record { _⟨$⟩_ = to ; cong = PropEq.cong to }
+                     ; from = record { _⟨$⟩_ = from ; cong = PropEq.cong from }
+                     ; inverse-of =
+                         record
+                         { left-inverse-of = left-inverse-of
+                         ; right-inverse-of = right-inverse-of
+                         }
+                     }
+          
+  prod-bij {suc a} {b} = helper ∘ Isym (vec-bij {a} (λ _ → b))
+    where helper :  Fin (sum′ (tabulate {suc a} (λ _ → b))) ↔ Fin ((suc a) * b)
+          helper rewrite (lem-tabulate {suc a} {b}) = Iid
+
+
+  fin-exclude₀ : ∀ {a} → Inverse (PropEq.setoid (Σ (Fin (suc a)) (λ x₁ → x₁ ≢ zero))) (finSetoid a)
+  fin-exclude₀ {a} = record
+                       { to = record { _⟨$⟩_ = to ; cong = PropEq.cong to }
+                       ; from = record { _⟨$⟩_ = from ; cong = PropEq.cong from }
+                       ; inverse-of =
+                           record { left-inverse-of = left-inverse-of ; right-inverse-of = λ _ → refl }
+                       }
+    where helper : ∀ {a} {x : Fin (suc a)} → x ≢ zero → toℕ x N≥ 1
+          helper {x = zero} x = ⊥-elim (x refl)
+          helper {x = suc _} x₁ = s≤s z≤n       
+         
+          to : Σ (Fin (suc a)) (λ x₁ → x₁ ≢ zero) → Fin a
+          to (zero , y) = ⊥-elim (y refl)
+          to (suc x , y) = x
+
+          from : Fin a → Σ (Fin (suc a)) (λ x₁ → x₁ ≢ zero)
+          from x = (suc x) , (λ ())
+          
+          left-inverse-of : ∀ x → from (to x) ≡ x
+          left-inverse-of (zero , y) = ⊥-elim (y refl)
+          left-inverse-of (suc x , y) = Inverse.to Σ-≡,≡↔≡ ⟨$⟩ (refl , ext)
+            where postulate ext : {A : Set} {a b : A} {x y : a ≢ b} → x ≡ y
+                  
+  rotln : ∀ {a} → ℕ → Fin a → Fin a
+  rotln {zero} _ ()
+  rotln zero x = x
+  rotln {suc a} (suc m) zero = rotln m (fromℕ a)
+  rotln {suc a} (suc m) (suc x) = inject₁ $ rotln {a} m x
+
+  tozero : ∀ {a} → (x : Fin (suc a)) → Fin (suc a) → Fin (suc a)
+  tozero x y with (y ≟ x)
+  tozero x y | yes p = zero
+  tozero x y | no ¬p with (y ≟ zero)
+  tozero x y | no ¬p | yes p = x
+  tozero x y | no ¬p₁ | no ¬p = y
+
+
+  tozero-bij : ∀ {a} → (x : Fin a) → Fin a ↔ Fin a
+  tozero-bij {zero} x = Iid
+  tozero-bij {suc a} x = record { to = record { _⟨$⟩_ = to ; cong = PropEq.cong to } ; from = record { _⟨$⟩_ = to ; cong = PropEq.cong to } ; inverse-of = record { left-inverse-of = inverse-of ; right-inverse-of = inverse-of } }
+    where to = tozero x
+
+          inverse-of : ∀ y → to (to y) ≡ y
+          inverse-of y with (to y ≟ x)
+          inverse-of y | yes p with y ≟ x
+          inverse-of y | yes p₁ | yes p = trans p₁ (sym p)
+          inverse-of y | yes p | no ¬p with y ≟ zero
+          inverse-of y | yes p₁ | no ¬p | yes p = sym p
+          inverse-of y | yes p | no ¬p₁ | no ¬p = ⊥-elim (¬p₁ p)
+          inverse-of y | no ¬p with (to y ≟ zero)
+          inverse-of y | no ¬p | yes p with y ≟ x
+          inverse-of y | no ¬p | yes p₁ | yes p = sym p
+          inverse-of y | no ¬p₁ | yes p | no ¬p with y ≟ zero
+          inverse-of y | no ¬p₁ | yes p₁ | no ¬p | yes p = ⊥-elim (¬p₁ refl)
+          inverse-of y | no ¬p₂ | yes p | no ¬p₁ | no ¬p = ⊥-elim (¬p p)
+          inverse-of y | no ¬p₁ | no ¬p with y ≟ x
+          inverse-of y | no ¬p₁ | no ¬p | yes p = ⊥-elim (¬p refl)
+          inverse-of y | no ¬p₂ | no ¬p₁ | no ¬p with y ≟ zero
+          inverse-of y | no ¬p₂ | no ¬p₁ | no ¬p | yes p = ⊥-elim (¬p₂ refl)
+          inverse-of y | no ¬p₃ | no ¬p₂ | no ¬p₁ | no ¬p = refl
+
+
+  lem→zero : ∀ {a} {x : Fin (suc a)} → tozero x x ≡ zero
+  lem→zero {x = x} with x ≟ x 
+  lem→zero | yes p = refl
+  lem→zero | no ¬p = ⊥-elim (¬p refl) 
+
+  fin-exclude′ : ∀ {a} → ( x : Fin (suc a)) → (Σ (Fin (suc a)) (λ x₁ → x₁ ≢ x)) ↔
+                          (Σ (Fin (suc a)) (λ x₁ → x₁ ≢ zero))
+  fin-exclude′ x = Σ↔ (tozero-bij x) (λ {y} → record { to = record { _⟨$⟩_ = λ x₁ x₂ → x₁ (sym $
+                                                                                              Inverse.injective (tozero-bij x)
+                                                                                              (trans (lem→zero {x = x}) (sym x₂))) ; cong = PropEq.cong _ } ; from = record { _⟨$⟩_ = λ x₁ x₂ → x₁ (subst (λ z → tozero z y ≡ zero) x₂ (lem→zero {x = y})) ; cong = PropEq.cong _ } })
+               where postulate Σ↔ : predicate-irrelevant-Σ↔
+
+
+  fin-exclude : ∀ {a} → ( x : Fin (suc a)) → Inverse (PropEq.setoid (Σ (Fin (suc a)) (λ x₁ → x₁ ≢ x))) (finSetoid a)
+  fin-exclude {a} x = fin-exclude₀ ∘ (fin-exclude′ x)
+
+  fin-exclude₂′ : ∀ {a} (x y : Fin (suc (suc a))) → (Σ (Fin (suc (suc a))) (λ x₁ → x₁ ≢ x × x₁ ≢ y)) ↔ Σ (Σ (Fin (suc (suc a))) (λ x₁ → x₁ ≢ x)) (λ x₁ → proj₁ x₁ ≢ y)
+  fin-exclude₂′ x y = record { to = record { _⟨$⟩_ = λ x₁ → ((proj₁ x₁) , (proj₁ $ proj₂ x₁)) , (proj₂ $ proj₂ x₁) ; cong = PropEq.cong _ } ; from = record { _⟨$⟩_ = λ x₁ → (proj₁ $ proj₁ x₁) , ((proj₂ $ proj₁ x₁) , (proj₂ x₁)) ; cong = PropEq.cong _ } ; inverse-of = record { left-inverse-of = λ _ → refl ; right-inverse-of = λ _ → refl } }
+
+  fin-exclude₂″ : ∀ {a} → (x y : Fin (suc (suc a))) → x ≢ y → Σ (Σ (Fin (suc (suc a))) (λ x₁ → x₁ ≢ x)) (λ x₁ → proj₁ x₁ ≢ y) ↔ Fin a
+  fin-exclude₂″  {a} x y neq = fin-exclude {a} (Inverse.to (fin-exclude x) ⟨$⟩ (y , ≢sym neq)) ∘ Σ↔ (fin-exclude {suc a} x) (record { to = record { _⟨$⟩_ = to ; cong = PropEq.cong to } ; from = record { _⟨$⟩_ = from ; cong = PropEq.cong from } })
+    where postulate Σ↔ : predicate-irrelevant-Σ↔
+          to : {x₁ : Σ (Fin (suc (suc a))) (λ x₂ → x₂ ≢ x)} →
+               proj₁ x₁ ≢ y → Inverse.to (fin-exclude x) ⟨$⟩ x₁ ≢ Inverse.to (fin-exclude x) ⟨$⟩ (y , (≢sym neq))
+          to {x₁} neq₀ = λ eq → neq₀ (PropEq.cong proj₁ $ Inverse.injective (fin-exclude x) eq)
+
+          from : {x₁ : Σ (Fin (suc (suc a))) (λ x₂ → x₂ ≢ x)} → Inverse.to (fin-exclude x) ⟨$⟩ x₁ ≢ Inverse.to (fin-exclude x) ⟨$⟩ (y , (≢sym neq)) → proj₁ x₁ ≢ y
+          from {x₁} neq₀ = λ eq → neq₀ (PropEq.cong (_⟨$⟩_ (Inverse.to (fin-exclude x))) (Inverse.to Σ-≡,≡↔≡ ⟨$⟩ (eq , ext)))
+             where postulate ext : {A : Set} {a b : A} {x y : a ≢ b} → x ≡ y
+
+  fin-exclude₂ :  ∀ {a} (x y : Fin (suc (suc a))) →  x ≢ y → (Σ (Fin (suc (suc a))) (λ x₁ → x₁ ≢ x × x₁ ≢ y)) ↔ Fin a
+  fin-exclude₂ {a} x y neq = (fin-exclude₂″ x y neq) ∘ (fin-exclude₂′ x y)
+
+  fin-one : ∀ {A : Set} → (x : A) → Σ A (λ x₁ → x₁ ≡ x) ↔ Fin 1
+  fin-one {A} x = record
+                    { to = record { _⟨$⟩_ = to ; cong = PropEq.cong to }
+                    ; from = record { _⟨$⟩_ = from ; cong = PropEq.cong from }
+                    ; inverse-of =
+                        record
+                        { left-inverse-of = left-inverse-of
+                        ; right-inverse-of = right-inverse-of
+                        }
+                    }
+    where to : Σ A (λ x₁ → x₁ ≡ x) → Fin 1
+          to x = zero
+
+          from  : Fin 1 → Σ A (λ x₁ → x₁ ≡ x)
+          from y = x , refl
+
+          left-inverse-of : ∀ x → from (to x) ≡ x
+          left-inverse-of y = Inverse.to Σ-≡,≡↔≡ ⟨$⟩ ((sym $ proj₂ y) , (PropEq.proof-irrelevance _ _))
+
+          right-inverse-of : ∀ x → to (from x) ≡ x
+          right-inverse-of zero = refl
+          right-inverse-of (suc ())

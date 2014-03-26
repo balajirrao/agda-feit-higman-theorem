@@ -20,6 +20,7 @@ open import Function
 open import Function.Equality hiding (_∘_; setoid) renaming (cong to Icong)
 open import Function.Inverse renaming (sym to Isym; zip to Izip; _∘_ to _I∘_)
 open import Function.LeftInverse hiding (_∘_)
+open import Function.Equivalence using (_⇔_)
 
 open import Function.Related.TypeIsomorphisms
 
@@ -176,3 +177,14 @@ module Misc where
 
   cong-pred-suc : ∀ {a b} → {x : a ≡ b} → cong pred (cong suc x) ≡ x
   cong-pred-suc {x = refl} = refl
+
+  predicate-irrelevant-Σ↔ : Set₁ 
+  predicate-irrelevant-Σ↔ = {A₁ A₂ : Set}
+    {B₁ : A₁ → Set} {B₂ : A₂ → Set}
+    (A₁↔A₂ : A₁ ↔ A₂) →
+      (∀ {x} → B₁ x ⇔ B₂ (Inverse.to A₁↔A₂ ⟨$⟩ x)) →
+      (Σ A₁ B₁) ↔ Σ A₂ B₂ 
+
+
+  postulate ≢-proof-irrelevance : {A : Set} {a b : A} (x y : a ≢ b) → x ≡ y
+

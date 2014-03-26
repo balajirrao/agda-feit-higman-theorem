@@ -44,13 +44,6 @@ open import Misc
 open import Lemma2-4-Inv
 
 module Lemma2-4-Bij-A where
-  postulate
-    Σ↔ : 
-        {A₁ A₂ : Set}
-        {B₁ : A₁ → Set} {B₂ : A₂ → Set}
-        (A₁↔A₂ : A₁ ↔ A₂) →
-        (∀ {x} → B₁ x ⇔ B₂ (Inverse.to A₁↔A₂ ⟨$⟩ x)) →
-        (Σ A₁ B₁) ↔ Σ A₂ B₂ 
 
   ρ-fin : (e f : P) → F.Fin ⌈ suc n /2⌉
   ρ-fin e f = F.fromℕ≤ {ρ e f} (s≤s A₁'-ρ)
@@ -90,6 +83,7 @@ module Lemma2-4-Bij-A where
 
   bij₁ {e} {f} {._} refl {≥1} {<n} = Σ↔ Iid (λ {x} → record { to = record { _⟨$⟩_ = to ; cong = cong (to {x}) } ; from = record { _⟨$⟩_ = from ; cong = cong from } })
     where
+      postulate Σ↔ : predicate-irrelevant-Σ↔
       to : {nck : Neck e} → (neck-e₂ nck ≢ e × ρ (neck-e₂ nck) f ≡ pred (ρ e f)) → nck ≡ neck⋆ e f
       to {nck} ( ≢e , ρ≡)  = neck! (≢sym ≢e)
                              (0<ρ<n/2⁻¹.class-A nck
@@ -108,6 +102,7 @@ module Lemma2-4-Bij-A where
                                 ; from = record { _⟨$⟩_ = from {x} ; cong = cong (from {x}) }
                                 })
     where open Data.Nat.≤-Reasoning
+          postulate Σ↔ : predicate-irrelevant-Σ↔
           <n : True (suc (ρ e f) ≤? ⌈ n /2⌉)
           <n = fromWitness (begin
                      suc (ρ e f)
@@ -133,6 +128,7 @@ module Lemma2-4-Bij-A where
                             ; from = record { _⟨$⟩_ = from {x} ; cong = cong (from {x}) }
                             })
     where open Data.Nat.≤-Reasoning
+          postulate Σ↔ : predicate-irrelevant-Σ↔
           <n : True (suc (ρ e f) ≤? ⌈ n /2⌉)
           <n = fromWitness (begin
                      suc (ρ e f)
@@ -159,6 +155,7 @@ module Lemma2-4-Bij-A where
                                                        ; from = record { _⟨$⟩_ = from {x} ; cong = cong (from {x}) }
                                                        })
     where open Data.Nat.≤-Reasoning
+          postulate Σ↔ : predicate-irrelevant-Σ↔
           ≥1 : True (1 ≤? ρ e f )
           ≥1 = fromWitness (begin 1 ≤⟨ s≤s z≤n ⟩ ⌈ pred n /2⌉ ≡⟨ sym (toWitness ≡predn) ⟩ (ρ e f ∎))
 
@@ -188,6 +185,7 @@ module Lemma2-4-Bij-A where
                                                                ; from = record { _⟨$⟩_ = from {x} ; cong = cong (from {x}) }
                                                                })
     where        
+          postulate Σ↔ : predicate-irrelevant-Σ↔
           to : {x : Neck e} → (neck-e₂ x ≢ e × ρ (neck-e₂ x) f ≡ pred (ρ e f)) → neck-e₂ x ≡ ρ≡n/2.e₂⋆ {n-even = n-even} (proj₁ x)
           to {x} proof = ρ≡n/2⁻¹.class-A₀ {n-even = n-even} x (trans (proj₂ proof) (cong pred (toWitness ≡predn)))
 
@@ -205,7 +203,8 @@ module Lemma2-4-Bij-A where
                                                                { to = record { _⟨$⟩_ = to {x} ; cong = cong (to {x}) }
                                                                ; from = record { _⟨$⟩_ = from {x} ; cong = cong (from {x}) }
                                                                })
-    where to : {x : Neck e} → (neck-e₂ x ≢ e × ρ (neck-e₂ x) f ≡ ρ e f) →
+    where postulate Σ↔ : predicate-irrelevant-Σ↔
+          to : {x : Neck e} → (neck-e₂ x ≢ e × ρ (neck-e₂ x) f ≡ ρ e f) →
                (neck-e₂ x) ≢ ρ≡n/2.e₂⋆  {n-even = n-even} (proj₁ x) × neck-e₂ x ≢ e
           to {x} proof = (ρ≡n/2⁻¹.class-A₁ {n-even = n-even} x (trans (proj₂ proof) (toWitness ≡predn))) , (proj₁ proof)
 
@@ -219,7 +218,8 @@ module Lemma2-4-Bij-A where
                                                                { to = record { _⟨$⟩_ = to {x} ; cong = cong (to {x}) }
                                                                ; from = record { _⟨$⟩_ = from {x} ; cong = cong (from {x}) }
                                                                })
-    where to : {x : Neck e} → (neck-e₂ x ≢ e × ρ (neck-e₂ x) e ≡ 1) → neck-e₂ x ≢ e
+    where postulate Σ↔ : predicate-irrelevant-Σ↔
+          to : {x : Neck e} → (neck-e₂ x ≢ e × ρ (neck-e₂ x) e ≡ 1) → neck-e₂ x ≢ e
           to {x} proof = proj₁ proof
     
           from : {x : Neck e} → neck-e₂ x ≢ e → (neck-e₂ x ≢ e × ρ (neck-e₂ x) e ≡ 1)
