@@ -79,8 +79,8 @@ module GenPolygon where
   s = (suc ss)
 
   postulate
-    GP-P : (l : L) → Inverse (setoid (P# l)) (setoid (Fin (1 + s)))
-    GP-L : (p : P) → Inverse (setoid (L# p)) (setoid (Fin (1 + t)))
+    GP-P : (l : L) → (P# l) ↔ Fin (1 + s)
+    GP-L : (p : P) → (L# p) ↔ Fin (1 + t)
 
   -- Tail of a shortest chain is shortest
   tail-shortest : ∀ {e f} {c : chain e f} → c is-shortest → tail c is-shortest
