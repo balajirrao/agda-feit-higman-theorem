@@ -101,13 +101,14 @@ module GenPolygon where
   shortest-irred {.f} {f} [ .f ] cis = tt
   shortest-irred {e} {f} (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) cis = tt
   shortest-irred {.e} {g} (e ∷ f ∷ c) cis = λ {n} {z} x → ≤⇒≯
-                                              (begin _ ≤⟨ s≤s (
-                                                sc-is-shorter-than
-                                                  proj₁ (short-circuit (_th-segment-of_ n (e ∷ f ∷ c) ) x)) ⟩
-                                                _
+                                              (begin suc (lambda e g) 
+                                                     ≤⟨ s≤s
+                                                          (sc-is-shorter-than
+                                                           proj₁ (short-circuit (n th-segment-of (e ∷ f ∷ c)) x)) ⟩
+                                                suc (len (proj₁ (short-circuit (n th-segment-of (e ∷ f ∷ c)) x)))
                                                   ≤⟨ proj₂ (short-circuit (_th-segment-of_ n (e ∷ f ∷ c) ) x) ⟩
-                                                _
-                                                  ≡⟨ cis ⟩ (len (sc e g) ∎))
+                                                suc (suc (len c))
+                                                  ≡⟨ cis ⟩ (lambda e g ∎))
                                                 (n≤m+n zero _)
 
   lem-tail-len : ∀ {e f} {c : chain e f} → len (tail c) ≡ pred (len c)
