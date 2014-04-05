@@ -78,7 +78,7 @@ module Lemma2-1 where
     lem₁ {e₁ = l ∶ #} {pt x} x₁ = ⊥-elim (oddEvenEither lem-pp x₁)
     lem₁ {e₁ = l ∶ #} {ln x} x₁ = lem-ll
 
-    lem₂ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (el e₁)) f ≡ n → ⊥
+    lem₂ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (el e₁)) f ≢ n
     lem₂ {e} {e₁} {f} λ≡n eq with parity (lambda (pt e) f)
     ... | isEven p = oddEvenEither (subst Even (trans λ≡n (sym eq)) p) (lem₀ {e} {e₁} p)
     ... | isOdd p = oddEvenEither (lem₁ {e} {e₁} p)  (subst Odd (trans λ≡n (sym eq)) p)
@@ -86,7 +86,7 @@ module Lemma2-1 where
     lem₃ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (el e₁)) f < n
     lem₃ {e} {e₁} {f} λ≡n = ≤-≢⇒< (A₁' {ln (el e₁)} {f}) (lem₂ {e} {e₁} λ≡n)
 
-    lem₄ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (el e₁)) f < (pred (n)) → ⊥
+    lem₄ : {e : P} {e₁ : L# e} {f : X} → lambda (pt e) f ≡ n → lambda (ln (el e₁)) f ≮ (pred (n)) 
     lem₄ {e} {e₁} {f} λ≡n p with sc-is-shorter-than (_∷_ (pt e) {{fromWitnessFalse (λ ())}} {{(pf e₁)}} (sc (ln (el e₁)) f))
     ... | z with nn | begin n ≡⟨ sym λ≡n ⟩ lambda (pt e) f ≤⟨ z ⟩ _ ≤⟨ p ⟩ ( pred (n)) ∎
     ... | y | k = helper k
@@ -113,7 +113,7 @@ module Lemma2-1 where
     lem-id e f λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} c , proof) | ln x with PropEq.cong (el) (A₂ ((sc (ln x) f) ∶ (≡⇒≤ (PropEq.cong suc (lem₅ {e} {x ∶ (e#f)} λ≡n)) , shortest-irred _ refl)) (c ∶ ((≡⇒≤ proof) , shortest-irred c (tail-shortest {c = (pt e) ∷ c} (trans proof (sym λ≡n))))))
     lem-id e f₁ λ≡n (_∷_ .(pt e) {{e<>f}} {{e#f}} .(sc (ln x) f₁) , proof) | ln x | refl = Inverse.to Σ-≡,≡↔≡ ⟨$⟩ (refl , (proof-irrelevance _ proof))
 
-    I : (e : P) (f : X) → lambda (pt e) f ≡ n → Inverse (PropEq.setoid (Σ (chain (pt e) f) (λ c → len c ≡ n))) (PropEq.setoid (L# e))
+    I : (e : P) (f : X) → lambda (pt e) f ≡ n → (Σ (chain (pt e) f) (λ c → len c ≡ n)) ↔ (L# e)
     I e f λ≡n = record { to = record { _⟨$⟩_ = F e f; cong = PropEq.cong (F e f) };
                      from = record { _⟨$⟩_ = F⁻¹ e f λ≡n ; cong = PropEq.cong (F⁻¹ e f λ≡n) } ;
                      inverse-of = record {
