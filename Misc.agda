@@ -152,7 +152,8 @@ module Misc where
   ¬<-≡ {suc x} q refl = ¬<-≡ (pred-mono q) refl
 
 
-  ≥1-fin-pred : ∀ {a}  {x : F.Fin a} → (F.toℕ x) ≥ 1 → F.toℕ (F.pred x) ≡ pred (F.toℕ x)
+  ≥1-fin-pred : ∀ {a}  {x : F.Fin a} → (F.toℕ x) ≥ 1 →
+                                  F.toℕ (F.pred x) ≡ pred (F.toℕ x)
   ≥1-fin-pred {zero} {()} p
   ≥1-fin-pred {suc a} {F.zero} ()
   ≥1-fin-pred {suc a} {F.suc x} p = F.inject₁-lemma x
@@ -172,7 +173,8 @@ module Misc where
   ⌊≤⌉ (suc zero) = z≤n
   ⌊≤⌉ (suc (suc x)) = s≤s (⌊≤⌉ x)
 
-  lem-fin-subst : ∀ { a b } (x : F.Fin a) → (eq : a ≡ b) → F.toℕ (subst F.Fin eq x) ≡ F.toℕ x
+  lem-fin-subst : ∀ { a b } (x : F.Fin a) → (eq : a ≡ b) →
+                                          F.toℕ (subst F.Fin eq x) ≡ F.toℕ x
   lem-fin-subst x refl = refl
 
   cong-pred-suc : ∀ {a b} → {x : a ≡ b} → cong pred (cong suc x) ≡ x
