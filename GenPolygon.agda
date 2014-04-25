@@ -19,7 +19,7 @@ open import Data.Fin using (Fin)
 open import Misc
 
 module GenPolygon where
-  open import IncidenceGeometry public
+  open import IncidencePlane public
 
   postulate
     nn : ℕ
@@ -41,23 +41,6 @@ module GenPolygon where
   postulate
     A₁ : (e f : X) → ∃ (λ (c : chain e f) → len c ≤ n)
     A₂ : ∀ {e f} (c c' : Σ' (chain e f) (λ z → len z < n × irred z)) → c ≡ c'
- 
-  -- From the A₁ postulate it follows that -- TODO : prove it ?
-  postulate
-    sc : (e f : X) → chain e f
-
-  lambda : (e f : X) → ℕ
-  lambda e f = len (sc e f)
-
-  -- A chain is shortest if it's length is lambda
-  _is-shortest : ∀ {e f} → (c : chain e f) → Set
-  _is-shortest {e} {f} c = len c ≡ lambda e f
-
-  postulate
-    sc-shortest : ∀ {e f} → (sc e f) is-shortest
-
-    -- sc is shorter than any given chain
-    sc-is-shorter-than_ : ∀ {e f} (c : chain e f) → lambda e f ≤ len c
   
   -- A₁ imples that the shortest length between any two elements can't be
   -- more than n
@@ -83,40 +66,3 @@ module GenPolygon where
   postulate
     GP-P : (l : L) → (P# l) ↔ Fin (1 + s)
     GP-L : (p : P) → (L# p) ↔ Fin (1 + t)
-
-  -- Tail of a shortest chain is shortest
-  tail-shortest : ∀ {e f} {c : chain e f} → c is-shortest → tail c is-shortest
-  tail-shortest {.f} {f} {[ .f ]} cis = cis
-  tail-shortest {e} {f} {.e ∷ c} cis = ≤-≥⇒≡ helper (sc-is-shorter-than c)
-    where
-      helper : (lambda (head c) f) ≥  len c
-      helper = pred-mono
-               (begin suc (len c)
-                          ≡⟨ cis ⟩
-                      len (sc e f)
-                          ≤⟨ sc-is-shorter-than (e ∷ sc (head c) f) ⟩
-                      (suc (len (sc (head c) f)) ∎))
-
- 
-  -- shortest chains are irreducible
-  shortest-irred : ∀ {e f} (c : chain e f) → c is-shortest → irred c
-  shortest-irred {.f} {f} [ .f ] cis = tt
-  shortest-irred {e} {f} (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) cis = tt
-  shortest-irred {.e} {g} (e ∷ f ∷ c) cis =
-                      λ {n} {z} x → ≤⇒≯
-                 (begin
-                   suc (lambda e g) 
-                     ≤⟨ s≤s
-                       (sc-is-shorter-than
-                       proj₁ (short-circuit (n th-segment-of (e ∷ f ∷ c)) x)) ⟩
-                     suc (len (proj₁ (short-circuit
-                         (n th-segment-of (e ∷ f ∷ c)) x)))
-                     ≤⟨ proj₂ (short-circuit
-                        (n th-segment-of (e ∷ f ∷ c) ) x) ⟩
-                           suc (suc (len c))
-                     ≡⟨ cis ⟩ (lambda e g ∎))
-                          (n≤m+n zero _)
-
-  lem-tail-len : ∀ {e f} {c : chain e f} → len (tail c) ≡ pred (len c)
-  lem-tail-len {.f} {f} {[ .f ]} = refl
-  lem-tail-len {e} {f} {_∷_ .e {{e<>f}} {{e#f}} c} = refl

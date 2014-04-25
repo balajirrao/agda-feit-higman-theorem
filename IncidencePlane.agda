@@ -6,19 +6,19 @@ open import Relation.Binary.PropositionalEquality as PropEq
 
 open import Data.Product hiding (map)
 open import Data.Empty
-open import Data.Unit hiding (_≟_; _≤?_)
+open import Data.Unit hiding (_≟_; _≤?_; _≤_)
 
 open import Data.Nat hiding (_≟_)
 open import Data.Nat.Properties
 open Data.Nat.≤-Reasoning
-
+open import Misc
 open SemiringSolver
 
 open import Data.Bool hiding (_≟_)
 
 import Level
 
-module IncidenceGeometry where
+module IncidencePlane where
 
   -- Set of points and lines
   postulate
@@ -61,6 +61,10 @@ module IncidenceGeometry where
   tail {.f} {f} [ .f ] = [ f ]
   tail {e} (.e ∷ c) = c
   
+  lem-tail-len : ∀ {e f} {c : chain e f} → len (tail c) ≡ pred (len c)
+  lem-tail-len {.f} {f} {[ .f ]} = refl
+  lem-tail-len {e} {f} {_∷_ .e {{e<>f}} {{e#f}} c} = refl
+
   -- Join two chains
   -- The chains have to end and begin at a common point respectively.
   -- This is done because the len becomes addtive
@@ -173,3 +177,53 @@ module IncidenceGeometry where
           helper {suc k} {≤len} x₁ = ic {k}
                          {Dec.fromWitness (pred-mono (Dec.toWitness ≤len))} x₁
 
+
+   -- From the A₁ postulate it follows that -- TODO : prove it ?
+  postulate
+    sc : (e f : X) → chain e f
+
+  lambda : (e f : X) → ℕ
+  lambda e f = len (sc e f)
+
+  -- A chain is shortest if it's length is lambda
+  _is-shortest : ∀ {e f} → (c : chain e f) → Set
+  _is-shortest {e} {f} c = len c ≡ lambda e f
+
+  postulate
+    sc-shortest : ∀ {e f} → (sc e f) is-shortest
+
+    -- sc is shorter than any given chain
+    sc-is-shorter-than_ : ∀ {e f} (c : chain e f) → lambda e f ≤ len c
+
+ -- Tail of a shortest chain is shortest
+  tail-shortest : ∀ {e f} {c : chain e f} → c is-shortest → tail c is-shortest
+  tail-shortest {.f} {f} {[ .f ]} cis = cis
+  tail-shortest {e} {f} {.e ∷ c} cis = ≤-≥⇒≡ helper (sc-is-shorter-than c)
+    where
+      helper : (lambda (head c) f) ≥  len c
+      helper = pred-mono
+               (begin suc (len c)
+                          ≡⟨ cis ⟩
+                      len (sc e f)
+                          ≤⟨ sc-is-shorter-than (e ∷ sc (head c) f) ⟩
+                      (suc (len (sc (head c) f)) ∎))
+
+ 
+  -- shortest chains are irreducible
+  shortest-irred : ∀ {e f} (c : chain e f) → c is-shortest → irred c
+  shortest-irred {.f} {f} [ .f ] cis = tt
+  shortest-irred {e} {f} (_∷_ .e {{e<>f}} {{e#f}} [ .f ]) cis = tt
+  shortest-irred {.e} {g} (e ∷ f ∷ c) cis =
+                      λ {n} {z} x → ≤⇒≯
+                 (begin
+                   suc (lambda e g) 
+                     ≤⟨ s≤s
+                       (sc-is-shorter-than
+                       proj₁ (short-circuit (n th-segment-of (e ∷ f ∷ c)) x)) ⟩
+                     suc (len (proj₁ (short-circuit
+                         (n th-segment-of (e ∷ f ∷ c)) x)))
+                     ≤⟨ proj₂ (short-circuit
+                        (n th-segment-of (e ∷ f ∷ c) ) x) ⟩
+                           suc (suc (len c))
+                     ≡⟨ cis ⟩ (lambda e g ∎))
+                          (n≤m+n zero _)
